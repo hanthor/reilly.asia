@@ -36,6 +36,6 @@ jobs:
         name: dist-public
         path: dist
     - name: Deploy
-      uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3
+      uses: hanthor/wrangler-action@e12a608bb1b3a2eb4613fcd51bef4dcadb1f000b # v3
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

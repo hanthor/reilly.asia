@@ -41,5 +41,5 @@ jobs:
         NODE_ENV: production
       run: |
         npm install -g wrangler@latest && \
-        npx wrangler deploy --config wrangler.jsonc --compatibility-date $(date +%Y-%m-%d) --main ./dist/server/index.js --assets ./dist/public
+        npx wrangler deploy
       

@@ -1,7 +1,7 @@
 {
-  "name": "reilly-asua",
+  "name": "reilly-asia",
   "compatibility_date": "2025-06-29",
   "assets": {
-    "directory": "./dist/"
+    "directory": "./dist/public"
   }
 }

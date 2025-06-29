@@ -19,11 +19,22 @@ jobs:
       run: npm install
     - name: Build project
       run: npm run build
+    - name: Upload production-ready assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-public
+        path: dist/public
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
+    needs: build
     steps:
     - uses: actions/checkout@v4
+    - name: Download production-ready assets
+      uses: actions/download-artifact@v4
+      with:
+        name: dist-public
+        path: dist/public
     - name: Deploy
       uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3
       with:

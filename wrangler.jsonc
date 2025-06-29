@@ -1,6 +1,7 @@
 {
   "name": "reilly-asia",
   "compatibility_date": "2025-06-29",
+  "main": "./dist/server/index.js",
   "assets": {
     "directory": "./dist/public"
   }

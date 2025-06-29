@@ -36,7 +36,10 @@ jobs:
         name: dist-public
         path: dist
     - name: Deploy
-      run: npm run deploy
       env:
-        CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         NODE_ENV: production
+      run: |
+        npm install -g wrangler@latest && \
+        npx wrangler deploy --config wrangler.jsonc --compatibility-date $(date +%Y-%m-%d) --main ./dist/server/index.js --assets ./dist/public
+      

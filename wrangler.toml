@@ -1,6 +1,6 @@
+pages_build_output_dir = "./client/dist"
+
 [build]
 command = "npm run build"
 cwd = "."
 watch_dir = "client"
-
-pages_build_output_dir = "./client/dist"

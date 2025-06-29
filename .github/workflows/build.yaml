@@ -36,6 +36,7 @@ jobs:
         name: dist-public
         path: dist
     - name: Deploy
-      uses: hanthor/wrangler-action@e12a608bb1b3a2eb4613fcd51bef4dcadb1f000b # v3
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      run: npm run deploy
+      env:
+        CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        NODE_ENV: production

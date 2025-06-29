@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Warm earthy palette inspired by the image */
+  --background: hsl(42, 28%, 89%); /* Warm cream/beige background */
+  --foreground: hsl(20, 14%, 25%); /* Rich brown text */
+  --muted: hsl(42, 20%, 85%); /* Muted cream */
+  --muted-foreground: hsl(20, 14%, 45%); /* Medium brown */
+  --popover: hsl(42, 28%, 92%); /* Light cream for popover */
+  --popover-foreground: hsl(20, 14%, 25%); /* Brown text */
+  --card: hsl(42, 28%, 92%); /* Light cream for cards */
+  --card-foreground: hsl(20, 14%, 25%); /* Brown text */
+  --border: hsl(42, 20%, 80%); /* Cream border */
+  --input: hsl(42, 20%, 85%); /* Cream input background */
+  --primary: hsl(167, 49%, 42%); /* Teal/turquoise from image */
+  --primary-foreground: hsl(42, 28%, 89%); /* Cream text on teal */
+  --secondary: hsl(35, 84%, 62%); /* Warm orange from image */
+  --secondary-foreground: hsl(20, 14%, 25%); /* Brown text on orange */
+  --accent: hsl(167, 49%, 42%); /* Teal accent */
+  --accent-foreground: hsl(42, 28%, 89%); /* Cream text */
+  --destructive: hsl(0, 84%, 60%); /* Red for errors */
+  --destructive-foreground: hsl(42, 28%, 89%); /* Cream text */
+  --ring: hsl(167, 49%, 42%); /* Teal ring */
+  --radius: 0.5rem;
+  
+  /* Earthy color scheme from image */
+  --earth-teal: hsl(167, 49%, 42%); /* Main teal */
+  --earth-orange: hsl(35, 84%, 62%); /* Warm orange */
+  --earth-rust: hsl(15, 70%, 45%); /* Rust brown */
+  --earth-cream: hsl(42, 28%, 89%); /* Cream background */
+  --earth-brown: hsl(20, 14%, 25%); /* Rich brown */
+  --earth-yellow: hsl(45, 90%, 55%); /* Golden yellow */
+}
+
+.dark {
+  /* Dark mode with warm earth tones */
+  --background: hsl(20, 14%, 12%); /* Dark warm brown background */
+  --foreground: hsl(42, 28%, 85%); /* Light cream text */
+  --muted: hsl(20, 14%, 18%); /* Dark muted brown */
+  --muted-foreground: hsl(42, 20%, 65%); /* Medium cream */
+  --popover: hsl(20, 14%, 15%); /* Dark brown popover */
+  --popover-foreground: hsl(42, 28%, 85%); /* Light cream text */
+  --card: hsl(20, 14%, 15%); /* Dark brown cards */
+  --card-foreground: hsl(42, 28%, 85%); /* Light cream text */
+  --border: hsl(20, 14%, 25%); /* Dark brown border */
+  --input: hsl(20, 14%, 18%); /* Dark brown input */
+  --primary: hsl(167, 49%, 52%); /* Brighter teal for dark mode */
+  --primary-foreground: hsl(20, 14%, 12%); /* Dark brown text on teal */
+  --secondary: hsl(35, 84%, 72%); /* Brighter orange for dark mode */
+  --secondary-foreground: hsl(20, 14%, 12%); /* Dark brown text on orange */
+  --accent: hsl(167, 49%, 52%); /* Bright teal accent */
+  --accent-foreground: hsl(20, 14%, 12%); /* Dark brown text */
+  --destructive: hsl(0, 84%, 70%); /* Bright red for errors */
+  --destructive-foreground: hsl(20, 14%, 12%); /* Dark brown text */
+  --ring: hsl(167, 49%, 52%); /* Bright teal ring */
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  code, pre {
+    font-family: 'Fira Code', monospace;
+  }
+}
+
+@layer utilities {
+  .earth-teal {
+    color: var(--earth-teal);
+  }
+  
+  .earth-orange {
+    color: var(--earth-orange);
+  }
+  
+  .earth-rust {
+    color: var(--earth-rust);
+  }
+  
+  .earth-brown {
+    color: var(--earth-brown);
+  }
+  
+  .earth-yellow {
+    color: var(--earth-yellow);
+  }
+  
+  .bg-earth-teal {
+    background-color: var(--earth-teal);
+  }
+  
+  .bg-earth-orange {
+    background-color: var(--earth-orange);
+  }
+  
+  .bg-earth-rust {
+    background-color: var(--earth-rust);
+  }
+  
+  .bg-earth-cream {
+    background-color: var(--earth-cream);
+  }
+
+  .bg-earth-brown {
+    background-color: var(--earth-brown);
+  }
+
+  .bg-earth-yellow {
+    background-color: var(--earth-yellow);
+  }
+
+  .text-earth-teal {
+  color: var(--earth-teal);
+  }
+
+  .text-earth-orange {
+    color: var(--earth-orange);
+  }
+
+  .text-earth-rust {
+    color: var(--earth-rust);
+  } 
+
+  .text-earth-cream {
+    color: var(--earth-cream);
+  }
+
+  .text-earth-brown {
+    color: var(--earth-brown);
+  }
+
+  .text-earth-yellow {
+    color: var(--earth-yellow);
+
+  }
+
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+
+.striped-background {
+  background: linear-gradient(
+    to bottom,
+    var(--earth-teal) 0%,
+    var(--earth-teal) 60%,
+    var(--earth-cream) 60%,
+    var(--earth-cream) 90%,
+    var(--earth-rust) 90%,
+    var(--earth-rust) 100%
+  );
+}
+
+.a {
+  color: var(--earth-teal);
+  text-decoration: none;
+}
+
+.a:hover {
+  text-decoration: underline;
+}
+
+.a:visited {
+  color: var(--earth-orange);
+}
+
+
+.border-earth-teal {
+  color: var(--earth-teal);
+}
+
+.border-earth-orange {
+  color: var(--earth-orange);
+}
+
+.border-earth-rust {
+  color: var(--earth-rust);
+}
+
+.border-earth-cream {
+  color: var(--earth-cream);
+}
+
+.border-earth-brown {
+  color: var(--earth-brown);
+}
+
+.border-earth-yellow {
+  color: var(--earth-yellow);
+}

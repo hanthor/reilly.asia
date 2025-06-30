@@ -7,11 +7,11 @@
   "routes": [
     {
       "pattern": "reilly.asia",
-      "custom_domain": true
-    },
+      "zone_name": "reilly.asia" 
+       },
     {
       "pattern": "www.reilly.asia",
-      "custom_domain": true
+      "zone_name": "reilly.asia" 
     }
   ]
 }

@@ -13,7 +13,7 @@ export default function ExperienceSection() {
       description: "Co-chairing the Atomic Special Interest Group at AlmaLinux.",
       tags: ["FOSS", "Community", "Leadership", "Volunteer"],
       url: "https://almalinux.org/",
-      logo: "/almalinuxord.png",
+      logo: "/almalinuxorg.png",
       primaryColor: "#ccaa42",
       forceLightText: false,
     },

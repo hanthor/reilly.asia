@@ -30,7 +30,7 @@ export default function ProjectsSection() {
   const featuredProjects: FeaturedProject[] = [
     {
       name: "bluefin-lts", 
-      description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is inteded to be the Cloud Native desktop experience for devs and luddites alike",
+      description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is intended to be the Cloud Native desktop experience for devs and luddites alike",
       language: "Shell",
       tags: ["bootc", "CentOS", "Container", "Immutable"],
       url: "https://github.com/ublue-os/bluefin-lts",

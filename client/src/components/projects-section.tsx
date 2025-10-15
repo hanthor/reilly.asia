@@ -6,6 +6,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Star, GitFork, ExternalLink, Github } from "lucide-react";
 import { fetchGitHubUser, fetchGitHubRepos } from "@/lib/github-api";
 
+interface FeaturedProject {
+  name: string;
+  description: string;
+  language: string;
+  tags: string[];
+  url: string;
+  logo?: string;
+  website?: string;
+}
+
 export default function ProjectsSection() {
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["/api/github/user"],
@@ -17,10 +27,10 @@ export default function ProjectsSection() {
     queryFn: fetchGitHubRepos,
   });
 
-  const featuredProjects = [
+  const featuredProjects: FeaturedProject[] = [
     {
       name: "bluefin-lts", 
-      description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is inteded to be the Cloud Native desktop experience for devs and luddites alike",
+      description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is intended to be the Cloud Native desktop experience for devs and luddites alike",
       language: "Shell",
       tags: ["bootc", "CentOS", "Container", "Immutable"],
       url: "https://github.com/ublue-os/bluefin-lts",
@@ -36,10 +46,11 @@ export default function ProjectsSection() {
     },
     {
       name: "tunaOS",
-      description: "Custom fork of the bluefin LTS project. Maintaining versions based on Almalinux and Fedora",
+      description: "A cloud-native immutable desktop OS built on bootc technology. TunaOS provides atomic updates, container-native workflows, and maintains versions based on both AlmaLinux and Fedora. Visit tunaos.org to learn more.",
       language: "Shell",
-      tags: ["bootc", "OS", "Fedora", "AlmaLinux"],
-      url: "https://github.com/hanthor/tunaOS"
+      tags: ["bootc", "OS", "Fedora", "AlmaLinux", "Immutable"],
+      url: "https://github.com/tuna-os/tunaos",
+      website: "https://tunaos.org"
     }
   ];
 
@@ -74,60 +85,79 @@ export default function ProjectsSection() {
             const stats = getRepoStats(project.name);
             
             return (
-              <a href={project.url} target="_blank" rel="noopener noreferrer" className="block">
-                <Card key={index} className="hover:shadow-md transition-shadow bg-earth-cream dark:bg-earth-brown dark:border-earth-rust cursor-pointer h-full flex flex-col">
-                  <CardContent className="p-6 flex-grow flex flex-col">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        {project.logo ? (
-                          <img src={project.logo} alt={`${project.name} logo`} className="w-8 h-8 rounded-full object-cover" />
-                        ) : (
-                          <Github className="w-5 h-5 text-earth-brown dark:text-earth-cream" />
-                        )}
-                        <h3 className="text-xl font-heading font-semibold text-earth-brown dark:text-earth-cream">{project.name}</h3>
-                      </div>
-                      <Badge variant="secondary" className={getLanguageColor(project.language)}>
-                        {project.language}
+              <Card key={index} className="hover:shadow-md transition-shadow bg-earth-cream dark:bg-earth-brown dark:border-earth-rust h-full flex flex-col">
+                <CardContent className="p-6 flex-grow flex flex-col">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      {project.logo ? (
+                        <img src={project.logo} alt={`${project.name} logo`} className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <Github className="w-5 h-5 text-earth-brown dark:text-earth-cream" />
+                      )}
+                      <h3 className="text-xl font-heading font-semibold text-earth-brown dark:text-earth-cream">{project.name}</h3>
+                    </div>
+                    <Badge variant="secondary" className={getLanguageColor(project.language)}>
+                      {project.language}
+                    </Badge>
+                  </div>
+
+                  <p className="text-earth-brown dark:text-earth-cream mb-4 flex-grow">{project.description}</p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.tags.map((tag, tagIndex) => (
+                      <Badge key={tagIndex} variant="outline" className="text-xs border-earth-rust text-earth-rust">
+                        {tag}
                       </Badge>
-                    </div>
+                    ))}
+                  </div>
 
-                    <p className="text-earth-brown dark:text-earth-cream mb-4 flex-grow">{project.description}</p>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.tags.map((tag, tagIndex) => (
-                        <Badge key={tagIndex} variant="outline" className="text-xs border-earth-rust text-earth-rust">
-                          {tag}
-                        </Badge>
-                      ))}
+                  <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center space-x-4 text-sm text-earth-brown dark:text-earth-cream">
+                      {stats ? (
+                        <>
+                          <span className="flex items-center">
+                            <Star className="w-4 h-4 mr-1" />
+                            {stats.stars}
+                          </span>
+                          <span className="flex items-center">
+                            <GitFork className="w-4 h-4 mr-1" />
+                            {stats.forks}
+                          </span>
+                        </>
+                      ) : (
+                        reposLoading && (
+                          <div className="flex space-x-4">
+                            <Skeleton className="h-4 w-12" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                        )
+                      )}
                     </div>
-
-                    <div className="flex items-center justify-between mt-auto">
-                      <div className="flex items-center space-x-4 text-sm text-earth-brown dark:text-earth-cream">
-                        {stats ? (
-                          <>
-                            <span className="flex items-center">
-                              <Star className="w-4 h-4 mr-1" />
-                              {stats.stars}
-                            </span>
-                            <span className="flex items-center">
-                              <GitFork className="w-4 h-4 mr-1" />
-                              {stats.forks}
-                            </span>
-                          </>
-                        ) : (
-                          reposLoading && (
-                            <div className="flex space-x-4">
-                              <Skeleton className="h-4 w-12" />
-                              <Skeleton className="h-4 w-12" />
-                            </div>
-                          )
-                        )}
-                      </div>
-                      <ExternalLink className="ml-1 w-5 h-5 text-earth-teal" />
+                    <div className="flex items-center space-x-2">
+                      {project.website && (
+                        <a 
+                          href={project.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-earth-teal hover:text-earth-orange transition-colors"
+                          aria-label={`Visit ${project.name} website`}
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </a>
+                      )}
+                      <a 
+                        href={project.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-earth-teal hover:text-earth-orange transition-colors"
+                        aria-label={`View ${project.name} on GitHub`}
+                      >
+                        <Github className="w-5 h-5" />
+                      </a>
                     </div>
-                  </CardContent>
-                </Card>
-              </a>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

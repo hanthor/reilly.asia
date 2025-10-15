@@ -78,38 +78,44 @@
 }
 
 @layer utilities {
-  .earth-teal {
+  /* Text colors */
+  .text-earth-teal {
     color: var(--earth-teal);
   }
-  
-  .earth-orange {
+
+  .text-earth-orange {
     color: var(--earth-orange);
   }
-  
-  .earth-rust {
+
+  .text-earth-rust {
     color: var(--earth-rust);
   }
-  
-  .earth-brown {
+
+  .text-earth-cream {
+    color: var(--earth-cream);
+  }
+
+  .text-earth-brown {
     color: var(--earth-brown);
   }
-  
-  .earth-yellow {
+
+  .text-earth-yellow {
     color: var(--earth-yellow);
   }
-  
+
+  /* Background colors */
   .bg-earth-teal {
     background-color: var(--earth-teal);
   }
-  
+
   .bg-earth-orange {
     background-color: var(--earth-orange);
   }
-  
+
   .bg-earth-rust {
     background-color: var(--earth-rust);
   }
-  
+
   .bg-earth-cream {
     background-color: var(--earth-cream);
   }
@@ -122,31 +128,30 @@
     background-color: var(--earth-yellow);
   }
 
-  .text-earth-teal {
-  color: var(--earth-teal);
+  /* Border colors */
+  .border-earth-teal {
+    border-color: var(--earth-teal);
   }
 
-  .text-earth-orange {
-    color: var(--earth-orange);
+  .border-earth-orange {
+    border-color: var(--earth-orange);
   }
 
-  .text-earth-rust {
-    color: var(--earth-rust);
-  } 
-
-  .text-earth-cream {
-    color: var(--earth-cream);
+  .border-earth-rust {
+    border-color: var(--earth-rust);
   }
 
-  .text-earth-brown {
-    color: var(--earth-brown);
+  .border-earth-cream {
+    border-color: var(--earth-cream);
   }
 
-  .text-earth-yellow {
-    color: var(--earth-yellow);
-
+  .border-earth-brown {
+    border-color: var(--earth-brown);
   }
 
+  .border-earth-yellow {
+    border-color: var(--earth-yellow);
+  }
 }
 
 /* Smooth scrolling */
@@ -171,6 +176,7 @@ html {
 }
 
 
+/* Custom background pattern */
 .striped-background {
   background: linear-gradient(
     to bottom,
@@ -183,40 +189,16 @@ html {
   );
 }
 
-.a {
+/* Link styles */
+a {
   color: var(--earth-teal);
   text-decoration: none;
 }
 
-.a:hover {
+a:hover {
   text-decoration: underline;
 }
 
-.a:visited {
+a:visited {
   color: var(--earth-orange);
-}
-
-
-.border-earth-teal {
-  color: var(--earth-teal);
-}
-
-.border-earth-orange {
-  color: var(--earth-orange);
-}
-
-.border-earth-rust {
-  color: var(--earth-rust);
-}
-
-.border-earth-cream {
-  color: var(--earth-cream);
-}
-
-.border-earth-brown {
-  color: var(--earth-brown);
-}
-
-.border-earth-yellow {
-  color: var(--earth-yellow);
 }

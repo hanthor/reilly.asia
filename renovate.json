@@ -32,8 +32,6 @@
       "matchPackageNames": [
         "react",
         "react-dom",
-        "@types/react",
-        "@types/react-dom",
         "@vitejs/plugin-react"
       ]
     },

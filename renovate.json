@@ -24,7 +24,12 @@
     {
       "description": "Group Tailwind CSS packages together",
       "groupName": "Tailwind CSS",
-      "matchPackagePatterns": ["^tailwind", "^@tailwindcss/"]
+      "matchPackageNames": [
+        "tailwindcss",
+        "tailwindcss-animate",
+        "@tailwindcss/typography",
+        "@tailwindcss/vite"
+      ]
     },
     {
       "description": "Group React ecosystem packages together",

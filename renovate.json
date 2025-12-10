@@ -2,5 +2,57 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "packageRules": [
+    {
+      "description": "Automerge patch and minor updates for dependencies",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "Group all Radix UI packages together",
+      "groupName": "Radix UI",
+      "matchPackagePrefixes": ["@radix-ui/"]
+    },
+    {
+      "description": "Group all TypeScript type packages together",
+      "groupName": "TypeScript types",
+      "matchPackagePrefixes": ["@types/"]
+    },
+    {
+      "description": "Group Tailwind CSS packages together",
+      "groupName": "Tailwind CSS",
+      "matchPackagePatterns": ["^tailwind", "^@tailwindcss/"]
+    },
+    {
+      "description": "Group React ecosystem packages together",
+      "groupName": "React ecosystem",
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "@types/react-dom",
+        "@vitejs/plugin-react"
+      ]
+    },
+    {
+      "description": "Separate major updates for review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    }
+  ],
+  "schedule": ["before 6am on Monday"],
+  "timezone": "America/Los_Angeles",
+  "labels": ["dependencies"],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  }
 }

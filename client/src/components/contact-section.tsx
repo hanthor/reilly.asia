@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData } from "@shared/schema";
-import { Linkedin, Github, MessageSquare, Globe, Shield, Wrench, BookOpen, Rocket, Mail } from "lucide-react";
+import { Linkedin, Github, MessageSquare, Globe, Shield, Mail } from "lucide-react";
 
 export default function ContactSection() {
   const { toast } = useToast();
@@ -28,7 +28,7 @@ export default function ContactSection() {
 
   const onSubmit = (data: ContactFormData) => {
     setIsSubmitting(true);
-    
+
     // Create mailto link with form data
     const subject = `Consulting Inquiry: ${data.projectType || 'General'} - ${data.name}`;
     const body = `Name: ${data.name}
@@ -41,15 +41,15 @@ ${data.message}
 Sent from James Reilly's portfolio website`;
 
     const mailtoLink = `mailto:james@reilly.asia?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
+
     // Open mailto link
     window.location.href = mailtoLink;
-    
+
     toast({
       title: "Opening email client...",
       description: "Your default email client should open with the message pre-filled.",
     });
-    
+
     // Reset form after brief delay
     setTimeout(() => {
       form.reset();
@@ -67,7 +67,7 @@ Sent from James Reilly's portfolio website`;
     },
     {
       icon: Github,
-      title: "GitHub", 
+      title: "GitHub",
       subtitle: "Open Source Projects",
       url: "https://github.com/hanthor",
       color: "text-earth-brown"
@@ -81,23 +81,7 @@ Sent from James Reilly's portfolio website`;
     }
   ];
 
-  const consultingServices = [
-    {
-      icon: Wrench,
-      title: "Infrastructure Design",
-      description: "Architecture planning and implementation guidance"
-    },
-    {
-      icon: BookOpen,
-      title: "Training & Education", 
-      description: "Team workshops and knowledge transfer sessions"
-    },
-    {
-      icon: Rocket,
-      title: "Implementation Support",
-      description: "Hands-on deployment and optimization assistance"
-    }
-  ];
+
 
   return (
     <section id="contact" className="py-16 bg-earth-cream dark:bg-earth-brown">
@@ -127,7 +111,7 @@ Sent from James Reilly's portfolio website`;
                   href={method.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-4 bg-earth-cream rounded-lg border border-earth-rust hover:shadow-sm transition-shadow"
+                  className="flex items-center p-4 bg-earth-cream dark:bg-earth-brown rounded-lg border border-earth-rust dark:border-earth-cream/20 hover:shadow-sm transition-shadow"
                 >
                   <method.icon className={`w-6 h-6 mr-4 ${method.color}`} />
                   <div>
@@ -249,19 +233,7 @@ Sent from James Reilly's portfolio website`;
           </Card>
         </div>
 
-        {/* Consulting Services */}
-        <div className="mt-16 bg-earth-cream rounded-xl p-8 border border-earth-rust">
-          <h3 className="text-2xl font-heading font-semibold text-earth-brown dark:text-earth-cream mb-6 text-center">Consulting Services</h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            {consultingServices.map((service, index) => (
-              <div key={index} className="text-center">
-                <service.icon className="w-8 h-8 mx-auto mb-3 text-earth-teal" />
-                <h4 className="font-semibold text-earth-brown dark:text-earth-cream mb-2">{service.title}</h4>
-                <p className="text-sm text-earth-brown dark:text-earth-cream">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+
       </div>
     </section>
   );

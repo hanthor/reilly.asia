@@ -8,6 +8,7 @@ import { fetchGitHubUser, fetchGitHubRepos } from "@/lib/github-api";
 
 interface FeaturedProject {
   name: string;
+  repoId?: string;
   description: string;
   language: string;
   tags: string[];
@@ -29,7 +30,8 @@ export default function ProjectsSection() {
 
   const featuredProjects: FeaturedProject[] = [
     {
-      name: "bluefin-lts", 
+      name: "bluefin-lts",
+      repoId: "ublue-os/bluefin-lts",
       description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is intended to be the Cloud Native desktop experience for devs and luddites alike",
       language: "Shell",
       tags: ["bootc", "CentOS", "Container", "Immutable"],
@@ -38,6 +40,7 @@ export default function ProjectsSection() {
     },
     {
       name: "AlmaLinux Bootc Images",
+      repoId: "almalinux/bootc-images",
       description: "AlmaLinux bootc images for immutable OS deployments. These images are built using the bootc project and are intended to be used with the AlmaLinux distribution.",
       language: "Shell",
       tags: ["bootc", "Container", "Immutable"],
@@ -46,10 +49,12 @@ export default function ProjectsSection() {
     },
     {
       name: "tunaOS",
+      repoId: "tuna-os/tunaos",
       description: "A cloud-native immutable desktop OS built on bootc technology. TunaOS provides atomic updates, container-native workflows, and maintains versions based on both AlmaLinux and Fedora. Visit tunaos.org to learn more.",
       language: "Shell",
       tags: ["bootc", "OS", "Fedora", "AlmaLinux", "Immutable"],
       url: "https://github.com/tuna-os/tunaos",
+      logo: "https://avatars.githubusercontent.com/u/223733964?s=200&v=4",
       website: "https://tunaos.org"
     }
   ];
@@ -57,7 +62,7 @@ export default function ProjectsSection() {
   const getLanguageColor = (language: string) => {
     const colors: Record<string, string> = {
       Go: "bg-earth-teal/20 text-earth-teal",
-      Shell: "bg-earth-orange/20 text-earth-orange", 
+      Shell: "bg-earth-orange/20 text-earth-orange",
       Kotlin: "bg-earth-rust/20 text-earth-rust",
       TypeScript: "bg-earth-teal/20 text-earth-teal",
       JavaScript: "bg-earth-yellow/20 text-earth-yellow",
@@ -65,8 +70,10 @@ export default function ProjectsSection() {
     return colors[language] || "bg-gray-100 text-gray-700";
   };
 
-  const getRepoStats = (repoName: string) => {
-    const repo = repos.find(r => r.name === repoName);
+  const getRepoStats = (project: FeaturedProject) => {
+    const repo = repos.find(r =>
+      project.repoId ? r.full_name === project.repoId : r.name === project.name
+    );
     return repo ? { stars: repo.stargazers_count, forks: repo.forks_count } : { stars: 0, forks: 0 };
   };
 
@@ -82,8 +89,8 @@ export default function ProjectsSection() {
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {featuredProjects.map((project, index) => {
-            const stats = getRepoStats(project.name);
-            
+            const stats = getRepoStats(project);
+
             return (
               <Card key={index} className="hover:shadow-md transition-shadow bg-earth-cream dark:bg-earth-brown dark:border-earth-rust h-full flex flex-col">
                 <CardContent className="p-6 flex-grow flex flex-col">
@@ -104,11 +111,33 @@ export default function ProjectsSection() {
                   <p className="text-earth-brown dark:text-earth-cream mb-4 flex-grow">{project.description}</p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.map((tag, tagIndex) => (
-                      <Badge key={tagIndex} variant="outline" className="text-xs border-earth-rust text-earth-rust">
-                        {tag}
-                      </Badge>
-                    ))}
+                    {project.tags.map((tag, tagIndex) => {
+                      const tagLinks: Record<string, string> = {
+                        "bootc": "https://bootc.io/",
+                        "Fedora": "https://fedoraproject.org/",
+                        "AlmaLinux": "https://almalinux.org/",
+                        "CentOS": "https://www.centos.org/",
+                      };
+                      const url = tagLinks[tag];
+                      const badge = (
+                        <Badge key={tagIndex} variant="outline" className="text-xs border-earth-rust text-earth-rust">
+                          {tag}
+                        </Badge>
+                      );
+
+                      return url ? (
+                        <a
+                          key={tagIndex}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="no-underline hover:opacity-80 transition-opacity"
+                          style={{ color: 'inherit' }}
+                        >
+                          {badge}
+                        </a>
+                      ) : badge;
+                    })}
                   </div>
 
                   <div className="flex items-center justify-between mt-auto">
@@ -135,9 +164,9 @@ export default function ProjectsSection() {
                     </div>
                     <div className="flex items-center space-x-2">
                       {project.website && (
-                        <a 
-                          href={project.website} 
-                          target="_blank" 
+                        <a
+                          href={project.website}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-earth-teal hover:text-earth-orange transition-colors"
                           aria-label={`Visit ${project.name} website`}
@@ -145,9 +174,9 @@ export default function ProjectsSection() {
                           <ExternalLink className="w-5 h-5" />
                         </a>
                       )}
-                      <a 
-                        href={project.url} 
-                        target="_blank" 
+                      <a
+                        href={project.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-earth-teal hover:text-earth-orange transition-colors"
                         aria-label={`View ${project.name} on GitHub`}

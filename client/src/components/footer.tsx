@@ -36,7 +36,10 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-earth-rust dark:border-earth-rust mt-8 pt-8 text-center text-sm text-earth-cream dark:text-earth-cream">
-          <p>&copy; 2024 James Reilly. Open to consulting opportunities worldwide.</p>
+          <p className="font-bold">James Reilly Consulting LLC</p>
+          <p>Ohio, USA</p>
+          <p>https://reilly.asia</p>
+          <p className="mt-2 text-earth-cream/60">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
         </div>
       </div>
     </footer>

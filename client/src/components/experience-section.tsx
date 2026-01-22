@@ -66,7 +66,7 @@ export default function ExperienceSection() {
       title: "System Specialist",
       date: "November 2015 - October 2021",
       description: "Windows/Linux server administration, desktop support, and primary IT support contact for the Center on Education and Training for Employment (CETE).",
-      tags: ["Linux", "Windows", "Desktop Support", "SCCM"],
+      tags: ["Linux", "Windows", "Desktop Support", "SCCM", "JAMF"],
       url: "https://cete.osu.edu/",
       logo: "/OSU.jpg",
       primaryColor: "#8b4949",
@@ -96,7 +96,7 @@ export default function ExperienceSection() {
                     ) : (
                       <Briefcase className="w-5 h-5" />
                     )}
-                    <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-xl font-heading font-semibold transition-colors">{job.company}</a>
+                    <a href={job.url} target="_blank" rel="noopener noreferrer" className={`text-xl font-heading font-semibold transition-colors hover:underline ${job.forceLightText ? 'text-earth-cream' : (job.primaryColor ? 'text-earth-brown' : 'text-earth-brown dark:text-earth-cream')}`}>{job.company}</a>
                   </div>
                   <Badge variant="secondary" className={`bg-earth-teal/90 ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'}`}>
                     {job.date}
@@ -105,11 +105,34 @@ export default function ExperienceSection() {
                 <h4 className="text-lg font-semibold ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'} mb-2">{job.title}</h4>
                 <p className="mb-4">{job.description}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {job.tags.map((tag, tagIndex) => (
-                    <Badge key={tagIndex} variant="outline" className={`text-xs ${job.forceLightText ? 'text-earth-cream border-earth-cream' : 'text-earth-brown border-earth-brown dark:text-earth-cream'}`}>
-                      {tag}
-                    </Badge>
-                  ))}
+                  {job.tags.map((tag, tagIndex) => {
+                    const tagLinks: Record<string, string> = {
+                      "Matrix": "https://matrix.org",
+                      "Moodle": "https://moodle.org",
+                      "SCCM": "https://www.microsoft.com/en-us/mem/configmgr",
+                      "JAMF": "https://www.jamf.com"
+                    };
+                    const url = tagLinks[tag];
+
+                    const badge = (
+                      <Badge key={tagIndex} variant="outline" className={`text-xs ${job.forceLightText ? 'text-earth-cream border-earth-cream' : 'text-earth-brown border-earth-brown dark:text-earth-cream'}`}>
+                        {tag}
+                      </Badge>
+                    );
+
+                    return url ? (
+                      <a
+                        key={tagIndex}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="no-underline hover:opacity-80 transition-opacity"
+                        style={{ color: 'inherit' }}
+                      >
+                        {badge}
+                      </a>
+                    ) : badge;
+                  })}
                 </div>
               </CardContent>
             </Card>

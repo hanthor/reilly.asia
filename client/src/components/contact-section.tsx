@@ -40,7 +40,7 @@ ${data.message}
 ---
 Sent from James Reilly's portfolio website`;
 
-    const mailtoLink = `mailto:james@reilly.asia?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoLink = `mailto:jreilly1821@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
     // Open mailto link
     window.location.href = mailtoLink;

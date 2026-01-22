@@ -35,7 +35,7 @@ export default function ExpertiseSection() {
       icon: Settings,
       title: "Systems Administration",
       description: <>
-        Comprehensive system management, <a href="https://www.redhat.com/en/topics/automation/what-is-homelab" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">homelab automation</a>, network infrastructure, and enterprise-grade deployment strategies.
+        Comprehensive system management, on-premise infrastructure automation, network infrastructure, and enterprise-grade deployment strategies.
       </>,
       tags: [
         { name: "Linux" },

@@ -1,17 +1,5 @@
 {
   "name": "reilly-asia",
   "compatibility_date": "2025-06-29",
-  "assets": {
-    "directory": "./dist/public"
-  },
-  "routes": [
-    {
-      "pattern": "reilly.asia",
-      "custom_domain": true,
-       },
-    {
-      "pattern": "www.reilly.asia",
-      "custom_domain": true,
-    }
-  ]
+  "pages_build_output_dir": "./dist/public"
 }

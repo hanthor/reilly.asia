@@ -72,7 +72,7 @@ export default function ProjectsSection() {
 
   const getRepoStats = (project: FeaturedProject) => {
     const repo = repos.find(r =>
-      project.repoId ? r.full_name === project.repoId : r.name === project.name
+      project.repoId ? r.full_name.toLowerCase() === project.repoId.toLowerCase() : r.name.toLowerCase() === project.name.toLowerCase()
     );
     return repo ? { stars: repo.stargazers_count, forks: repo.forks_count } : { stars: 0, forks: 0 };
   };

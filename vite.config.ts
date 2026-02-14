@@ -21,7 +21,7 @@ export default defineConfig({
   server: {
     fs: {
       strict: true,
-      deny: ["**/.*"],
+      deny: ['.env', '.env.*', '*.{crt,pem}'],
     },
   },
 });

@@ -5,5 +5,11 @@
   "org.matrix.msc2965.authentication": {
     "account": "https://auth.reilly.asia/account",
     "issuer": "https://auth.reilly.asia/"
-  }
+  },
+  "org.matrix.msc4143.rtc_foci": [
+    {
+      "livekit_service_url": "https://call.reilly.asia",
+      "type": "livekit"
+    }
+  ]
 }

@@ -39,12 +39,12 @@ export default function ProjectsSection() {
       logo: "/ublue-os.png"
     },
     {
-      name: "finpilot",
-      repoId: "projectbluefin/finpilot",
-      description: "Build your own custom Bluefin image. A starting point for anyone who wants to extend Bluefin with their own packages, configs, and customizations.",
+      name: "common",
+      repoId: "projectbluefin/common",
+      description: "Shared OCI layer included in every Bluefin image — the foundational packages, configs, and scripts that all Bluefin variants build on top of.",
       language: "Shell",
-      tags: ["bootc", "Bluefin", "Container", "Immutable"],
-      url: "https://github.com/projectbluefin/finpilot",
+      tags: ["bootc", "Bluefin", "OCI", "Container"],
+      url: "https://github.com/projectbluefin/common",
       logo: "/ublue-os.png"
     },
     {

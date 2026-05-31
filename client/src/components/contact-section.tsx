@@ -73,9 +73,9 @@ Sent from James Reilly's portfolio website`;
     {
       icon: Github,
       title: "GitHub",
-      subtitle: "Open Source Projects",
+      subtitle: "@hanthor",
       url: "https://github.com/hanthor",
-      color: "text-earth-brown"
+      color: "text-earth-brown dark:text-earth-cream"
     },
     {
       icon: MessageSquare,

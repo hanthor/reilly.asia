@@ -39,12 +39,12 @@ export default function ProjectsSection() {
       logo: "/ublue-os.png"
     },
     {
-      name: "common",
-      repoId: "projectbluefin/common",
-      description: "Shared OCI layer included in every Bluefin image — the foundational packages, configs, and scripts that all Bluefin variants build on top of.",
-      language: "Shell",
-      tags: ["bootc", "Bluefin", "OCI", "Container"],
-      url: "https://github.com/projectbluefin/common",
+      name: "bootc-installer",
+      repoId: "projectbluefin/bootc-installer",
+      description: "A libadwaita graphical installer for bootc systems, forked from Vanilla OS. Makes it possible to install bootable container images with a proper GUI install flow.",
+      language: "Python",
+      tags: ["bootc", "Installer", "GTK", "Bluefin"],
+      url: "https://github.com/projectbluefin/bootc-installer",
       logo: "/ublue-os.png"
     },
     {

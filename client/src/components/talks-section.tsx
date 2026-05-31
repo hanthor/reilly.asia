@@ -5,6 +5,14 @@ import { Calendar, MapPin, Video, Mic } from "lucide-react";
 export default function TalksSection() {
     const talks = [
         {
+            title: "Report from a Slop Factory: LLMs and FOSS",
+            event: "LucknowFOSS 2.0",
+            type: "Talk",
+            date: "04 Apr 2026",
+            location: "IIIT Lucknow",
+            url: "https://fossunited.org/c/lucknow/2026/cfp/610ledko8u"
+        },
+        {
             title: "Self-hosting Matrix and other LAN-based fun",
             event: "Lucknow November Meetup",
             type: "Workshop",
@@ -29,12 +37,36 @@ export default function TalksSection() {
             url: "https://fossunited.org/c/mysore/FOSSMys-Aug/cfp/80akrtu3nf"
         },
         {
+            title: "Bootable Containers: Redux",
+            event: "Lucknow August Meetup",
+            type: "Talk",
+            date: "02 Aug 2025",
+            location: "IIIT Lucknow",
+            url: "https://fossunited.org/c/lucknow/2025/august/cfp/1i4adm6jbm"
+        },
+        {
             title: "Fireside Chat with Kailash Nadh",
             event: "LucknowFOSS",
             type: "Panel",
             date: "12 Apr 2025",
             location: "IIIT Lucknow",
             url: "https://fossunited.org/c/lucknow/2025/cfp/2ok5qlec77"
+        },
+        {
+            title: "FOSS and Curiosity: How I grew my career pursuing interests in Open Source",
+            event: "BiharFOSS 2025",
+            type: "Talk",
+            date: "22 Mar 2025",
+            location: "IIT Patna",
+            url: "https://fossunited.org/c/bihar/2025/cfp/mfvun6uns2"
+        },
+        {
+            title: "Atomic Desktops and Bootable Containers: The future of Linux on the Desktop",
+            event: "Lucknow January Meetup",
+            type: "Talk",
+            date: "25 Jan 2025",
+            location: "IIIT Lucknow",
+            url: "https://fossunited.org/c/lucknow/2025/jan/cfp/4fikk831lk"
         },
         {
             title: "The Future of the Linux Desktop? Atomic Images and Bootable Containers",

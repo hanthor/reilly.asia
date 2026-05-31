@@ -7,19 +7,19 @@ export default function ConsultingSection() {
         {
             icon: Wrench,
             title: "Infrastructure Design",
-            description: "Architecture planning and implementation guidance for robust, scalable systems.",
+            description: "Help figuring out what to build and how — from picking the right tools to sketching out an architecture that won't bite you later.",
             features: ["System Architecture", "Capacity Planning", "Security Design"]
         },
         {
             icon: BookOpen,
             title: "Training & Education",
-            description: "Team workshops and knowledge transfer sessions to empower your staff.",
+            description: "Workshops and docs to get your team up to speed on whatever we're working on together.",
             features: ["Custom Workshops", "Documentation", "Best Practices"]
         },
         {
             icon: Rocket,
             title: "Implementation Support",
-            description: "Hands-on deployment and optimization assistance to ensure success.",
+            description: "Actually getting things running — deployment, tuning, and debugging when things inevitably go sideways.",
             features: ["Deployment Assistance", "Performance Tuning", "Troubleshooting"]
         }
     ];
@@ -30,7 +30,7 @@ export default function ConsultingSection() {
                 <div className="text-center mb-12">
                     <h2 className="text-4xl font-heading font-bold text-earth-brown dark:text-earth-cream mb-4">Consulting Services</h2>
                     <p className="text-xl text-earth-brown/80 dark:text-earth-cream/80 max-w-3xl mx-auto">
-                        Leveraging deep technical expertise to solve complex infrastructure challenges
+                        Here's what I can help with.
                     </p>
                 </div>
 

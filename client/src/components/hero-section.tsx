@@ -27,11 +27,12 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-xl text-earth-cream dark:text-earth-cream mb-8 leading-relaxed max-w-3xl">
-              Systems consultant specializing in{" "}
-              <strong className="text-earth-cream dark:text-earth-cream">Linux infrastructure</strong>,{" "}
-              <strong className="text-earth-cream dark:text-earth-cream">Matrix services</strong>, and{" "}
-              <strong className="text-earth-cream dark:text-earth-cream">enterprise systems administration</strong>.
-              Helping organizations build resilient, scalable infrastructure solutions.
+              I work on <strong className="text-earth-cream dark:text-earth-cream">Linux infrastructure</strong> and open source.
+              Right now I'm mostly focused on{" "}
+              <strong className="text-earth-cream dark:text-earth-cream">bootable containers</strong> — immutable OS images
+              built with OCI and deployed via bootc. I've done support, sysadmin, and consulting work over the last decade,
+              including a stretch at Element running{" "}
+              <strong className="text-earth-cream dark:text-earth-cream">Matrix</strong> for enterprise clients.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -54,7 +55,7 @@ export default function HeroSection() {
                 asChild
                 className="border-blue-500 text-white bg-blue-500 hover:bg-earth-cream/100"
               >
-                <a href="https://linkedin/in/jreilly112" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.linkedin.com/in/jreilly112/" target="_blank" rel="noopener noreferrer">
                   <LinkedinIcon className="mr-2 h-4 w-4" />
                   View LinkedIn
                 </a>

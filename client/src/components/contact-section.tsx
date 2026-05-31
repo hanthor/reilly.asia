@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Linkedin, Github, MessageSquare, Globe, Shield, Mail } from "lucide-rea
 export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -27,6 +28,10 @@ export default function ContactSection() {
   });
 
   const onSubmit = (data: ContactFormData) => {
+    if (honeypotRef.current?.value) {
+      form.reset();
+      return;
+    }
     setIsSubmitting(true);
 
     // Create mailto link with form data
@@ -89,7 +94,7 @@ Sent from James Reilly's portfolio website`;
         <div className="text-center mb-12">
           <h2 className="text-4xl font-heading font-bold text-earth-brown dark:text-earth-cream mb-4">Get In Touch</h2>
           <p className="text-xl text-earth-brown dark:text-earth-cream max-w-2xl mx-auto">
-            Ready to discuss your infrastructure needs?
+            Want to work together? Here's how to reach me.
           </p>
         </div>
 
@@ -99,8 +104,7 @@ Sent from James Reilly's portfolio website`;
             <div>
               <h3 className="text-2xl font-heading font-semibold text-earth-brown dark:text-earth-cream mb-6">Let's Connect</h3>
               <p className="text-earth-brown dark:text-earth-cream mb-6 leading-relaxed">
-                I'm always interested in discussing new projects, consulting opportunities,
-                or collaborative ventures in infrastructure technology.
+                Whether it's a consulting project, an open source collaboration, or just a question about bootc or Matrix — happy to chat.
               </p>
             </div>
 
@@ -130,6 +134,15 @@ Sent from James Reilly's portfolio website`;
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <input
+                    ref={honeypotRef}
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}
+                  />
                   <FormField
                     control={form.control}
                     name="name"

@@ -8,7 +8,7 @@ export default function ExpertiseSection() {
       icon: Rocket,
       title: "Linux Infrastructure",
       description: <>
-        Currently exploring and implementing <a href="https://www.containers.bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">bootable containers</a> for immutable OS deployments and transactional system updates using <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">OCI container images</a>.
+        Mostly working with <a href="https://www.containers.bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">bootable containers</a> these days — <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">OCI images</a> you deploy as a full OS with atomic updates built in. If you're thinking about immutable infrastructure or want off the treadmill of traditional package management, this is worth looking at.
       </>,
       tags: [
         { name: "bootc", url: "https://www.containers.bootc.dev/" },
@@ -21,7 +21,7 @@ export default function ExpertiseSection() {
       icon: MessageSquare,
       title: "Matrix Services",
       description: <>
-        Advanced <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">Matrix protocol</a> implementation, bridge development, and enterprise communication infrastructure design and deployment.
+        Ran support and technical account management at Element for clients including NATO and the USMC. I know how to deploy <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">Matrix</a>, set up bridges, and keep the whole thing running — from a homeserver to a large enterprise deployment.
       </>,
       tags: [
         { name: "Matrix", url: "https://matrix.org/" },
@@ -35,7 +35,7 @@ export default function ExpertiseSection() {
       icon: Settings,
       title: "Systems Administration",
       description: <>
-        Comprehensive system management, on-premise infrastructure automation, network infrastructure, and enterprise-grade deployment strategies.
+        Linux and Windows servers, automation, networking, virtualization — the usual sysadmin toolkit. Been doing this since 2015.
       </>,
       tags: [
         { name: "Linux" },
@@ -56,7 +56,7 @@ export default function ExpertiseSection() {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-heading font-bold text-earth-brown dark:text-earth-cream mb-4">Technical Expertise</h2>
           <p className="text-xl text-earth-brown dark:text-earth-cream max-w-3xl mx-auto">
-            Specialized knowledge in modern infrastructure and communication technologies
+            Things I actually know how to do.
           </p>
         </div>
 

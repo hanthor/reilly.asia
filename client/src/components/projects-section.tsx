@@ -32,7 +32,7 @@ export default function ProjectsSection() {
     {
       name: "bluefin-lts",
       repoId: "ublue-os/bluefin-lts",
-      description: "Bluefin LTS distribution built on CentOS with bootc. Bluefin is intended to be the Cloud Native desktop experience for devs and luddites alike",
+      description: "Bluefin LTS built on CentOS with bootc — a cloud-native desktop for developers and people who just want a Linux box that stays out of the way.",
       language: "Shell",
       tags: ["bootc", "CentOS", "Container", "Immutable"],
       url: "https://github.com/ublue-os/bluefin-lts",
@@ -41,21 +41,29 @@ export default function ProjectsSection() {
     {
       name: "AlmaLinux Bootc Images",
       repoId: "almalinux/bootc-images",
-      description: "AlmaLinux bootc images for immutable OS deployments. These images are built using the bootc project and are intended to be used with the AlmaLinux distribution.",
+      description: "Bootable container images for AlmaLinux — immutable OS deployments via OCI. Part of the AlmaLinux Atomic SIG.",
       language: "Shell",
-      tags: ["bootc", "Container", "Immutable"],
+      tags: ["bootc", "AlmaLinux", "Container", "Immutable"],
       url: "https://github.com/almalinux/bootc-images",
       logo: "/almalinuxorg.png"
     },
     {
-      name: "tunaOS",
-      repoId: "tuna-os/tunaos",
-      description: "A cloud-native immutable desktop OS built on bootc technology. TunaOS provides atomic updates, container-native workflows, and maintains versions based on both AlmaLinux and Fedora. Visit tunaos.org to learn more.",
-      language: "Shell",
-      tags: ["bootc", "OS", "Fedora", "AlmaLinux", "Immutable"],
-      url: "https://github.com/tuna-os/tunaos",
-      logo: "https://avatars.githubusercontent.com/u/223733964?s=200&v=4",
-      website: "https://tunaos.org"
+      name: "bluefin-mcp",
+      repoId: "hanthor/bluefin-mcp",
+      description: "An MCP server for interacting with Bluefin from your AI agent client. Query system info, manage packages, and run operations through any MCP-compatible host.",
+      language: "TypeScript",
+      tags: ["MCP", "AI", "Bluefin", "bootc"],
+      url: "https://github.com/hanthor/bluefin-mcp",
+      logo: "/ublue-os.png"
+    },
+    {
+      name: "testsuite",
+      repoId: "hanthor/testsuite",
+      description: "Cloud-native QA pipeline for Project Bluefin. Runs automated AT-SPI accessibility and integration tests against live OS images using Argo Workflows and KubeVirt.",
+      language: "Python",
+      tags: ["Argo Workflows", "KubeVirt", "QA", "Bluefin"],
+      url: "https://github.com/hanthor/testsuite",
+      logo: "/ublue-os.png"
     }
   ];
 
@@ -66,6 +74,7 @@ export default function ProjectsSection() {
       Kotlin: "bg-earth-rust/20 text-earth-rust",
       TypeScript: "bg-earth-teal/20 text-earth-teal",
       JavaScript: "bg-earth-yellow/20 text-earth-yellow",
+      Python: "bg-earth-teal/20 text-earth-teal",
     };
     return colors[language] || "bg-gray-100 text-gray-700";
   };
@@ -83,7 +92,7 @@ export default function ProjectsSection() {
         <div className="text-center mb-12">
           <h2 className="text-4xl font-heading font-bold text-earth-cream dark:text-earth-cream mb-4">Featured Projects</h2>
           <p className="text-xl text-earth-cream dark:text-earth-cream max-w-3xl mx-auto">
-            Open source contributions and consulting work in infrastructure and communication technologies
+            Open source work I'm actively involved in.
           </p>
         </div>
 

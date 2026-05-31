@@ -26,7 +26,6 @@ export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
     const externalRepos = [
       "ublue-os/bluefin-lts",
       "almalinux/bootc-images",
-      "tuna-os/tunaos"
     ];
 
     // Fetch user repos

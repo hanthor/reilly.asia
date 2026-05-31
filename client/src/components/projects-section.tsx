@@ -39,6 +39,34 @@ export default function ProjectsSection() {
       logo: "/ublue-os.png"
     },
     {
+      name: "finpilot",
+      repoId: "projectbluefin/finpilot",
+      description: "Build your own custom Bluefin image. A starting point for anyone who wants to extend Bluefin with their own packages, configs, and customizations.",
+      language: "Shell",
+      tags: ["bootc", "Bluefin", "Container", "Immutable"],
+      url: "https://github.com/projectbluefin/finpilot",
+      logo: "/ublue-os.png"
+    },
+    {
+      name: "dakota",
+      repoId: "projectbluefin/dakota",
+      description: "The build system behind Bluefin. Manages the image pipeline, layering, and release process for Project Bluefin.",
+      language: "Makefile",
+      tags: ["Bluefin", "CI/CD", "bootc", "Container"],
+      url: "https://github.com/projectbluefin/dakota",
+      logo: "/ublue-os.png"
+    },
+    {
+      name: "tunaOS",
+      repoId: "tuna-os/tunaos",
+      description: "A cloud-native immutable desktop OS for enterprise Linux, built on bootc. Offers atomic updates and versions based on both AlmaLinux and Fedora.",
+      language: "Shell",
+      tags: ["bootc", "AlmaLinux", "Fedora", "Immutable"],
+      url: "https://github.com/tuna-os/tunaos",
+      logo: "https://avatars.githubusercontent.com/u/223733964?s=200&v=4",
+      website: "https://tunaos.org"
+    },
+    {
       name: "AlmaLinux Bootc Images",
       repoId: "almalinux/bootc-images",
       description: "Bootable container images for AlmaLinux — immutable OS deployments via OCI. Part of the AlmaLinux Atomic SIG.",
@@ -48,21 +76,12 @@ export default function ProjectsSection() {
       logo: "/almalinuxorg.png"
     },
     {
-      name: "bluefin-mcp",
-      repoId: "hanthor/bluefin-mcp",
-      description: "An MCP server for interacting with Bluefin from your AI agent client. Query system info, manage packages, and run operations through any MCP-compatible host.",
-      language: "TypeScript",
-      tags: ["MCP", "AI", "Bluefin", "bootc"],
-      url: "https://github.com/hanthor/bluefin-mcp",
-      logo: "/ublue-os.png"
-    },
-    {
-      name: "testsuite",
-      repoId: "hanthor/testsuite",
-      description: "Cloud-native QA pipeline for Project Bluefin. Runs automated AT-SPI accessibility and integration tests against live OS images using Argo Workflows and KubeVirt.",
-      language: "Python",
-      tags: ["Argo Workflows", "KubeVirt", "QA", "Bluefin"],
-      url: "https://github.com/hanthor/testsuite",
+      name: "knuckle",
+      repoId: "projectbluefin/knuckle",
+      description: "Deploy Flatcar Container Linux at home with a familiar UX. Takes the rough edges off self-hosted Flatcar and makes it feel like a proper homelab distro.",
+      language: "Go",
+      tags: ["Flatcar", "Homelab", "Container Linux"],
+      url: "https://github.com/projectbluefin/knuckle",
       logo: "/ublue-os.png"
     }
   ];
@@ -75,6 +94,8 @@ export default function ProjectsSection() {
       TypeScript: "bg-earth-teal/20 text-earth-teal",
       JavaScript: "bg-earth-yellow/20 text-earth-yellow",
       Python: "bg-earth-teal/20 text-earth-teal",
+      Makefile: "bg-earth-brown/20 text-earth-brown dark:text-earth-cream",
+      Go: "bg-earth-teal/20 text-earth-teal",
     };
     return colors[language] || "bg-gray-100 text-gray-700";
   };

@@ -8,21 +8,31 @@ export default function ConsultingSection() {
             icon: Wrench,
             title: "Infrastructure Design",
             description: "Help figuring out what to build and how — from picking the right tools to sketching out an architecture that won't bite you later.",
-            features: ["System Architecture", "Capacity Planning", "Security Design"]
+            features: ["System Architecture", "Capacity Planning", "Security Design"],
+            contactType: "consulting"
         },
         {
             icon: BookOpen,
             title: "Training & Education",
             description: "Workshops and docs to get your team up to speed on whatever we're working on together.",
-            features: ["Custom Workshops", "Documentation", "Best Practices"]
+            features: ["Custom Workshops", "Documentation", "Best Practices"],
+            contactType: "consulting"
         },
         {
             icon: Rocket,
             title: "Implementation Support",
             description: "Actually getting things running — deployment, tuning, and debugging when things inevitably go sideways.",
-            features: ["Deployment Assistance", "Performance Tuning", "Troubleshooting"]
+            features: ["Deployment Assistance", "Performance Tuning", "Troubleshooting"],
+            contactType: "sysadmin"
         }
     ];
+
+    const scrollToContact = (type: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set("contact", type);
+        window.history.replaceState({}, "", url.toString());
+        document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+    };
 
     return (
         <section id="consulting" className="py-16 bg-white dark:bg-background">
@@ -55,7 +65,10 @@ export default function ConsultingSection() {
                                         </li>
                                     ))}
                                 </ul>
-                                <Button className="w-full bg-earth-rust hover:bg-earth-rust/90 text-white dark:bg-earth-orange dark:text-earth-brown mt-auto group">
+                                <Button
+                                    onClick={() => scrollToContact(service.contactType)}
+                                    className="w-full bg-earth-rust hover:bg-earth-rust/90 text-white dark:bg-earth-orange dark:text-earth-brown mt-auto group"
+                                >
                                     Get in Touch
                                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                 </Button>

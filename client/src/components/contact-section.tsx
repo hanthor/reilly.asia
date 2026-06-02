@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,17 @@ export default function ContactSection() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get("contact");
+    if (type) {
+      form.setValue("projectType", type);
+      params.delete("contact");
+      const clean = params.toString();
+      window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
+    }
+  }, [form]);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),

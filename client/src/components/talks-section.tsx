@@ -105,29 +105,29 @@ export default function TalksSection() {
                             rel="noopener noreferrer"
                             className="block group"
                         >
-                            <Card className="h-full hover:shadow-md transition-shadow bg-white dark:bg-earth-teal/15 border-earth-rust/20 dark:border-earth-cream/10 group-hover:border-earth-teal dark:group-hover:border-earth-teal">
+                            <Card className="h-full hover:shadow-lg transition-shadow bg-earth-teal dark:bg-earth-teal/30 border-earth-teal/50 dark:border-earth-cream/10 group-hover:border-earth-orange">
                                 <CardContent className="p-6 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
-                                        <Badge variant={talk.type === "Workshop" ? "default" : "secondary"} className="bg-earth-teal/10 text-earth-teal dark:text-earth-cream hover:bg-earth-teal/20">
+                                        <Badge variant="secondary" className="bg-earth-cream/20 text-earth-cream hover:bg-earth-cream/30 border-0">
                                             {talk.type}
                                         </Badge>
                                     </div>
 
-                                    <h3 className="text-lg font-heading font-semibold text-earth-brown dark:text-earth-cream mb-3 group-hover:text-earth-teal transition-colors">
+                                    <h3 className="text-lg font-heading font-semibold text-earth-cream mb-3 group-hover:text-earth-orange transition-colors">
                                         {talk.title}
                                     </h3>
 
-                                    <div className="mt-auto space-y-2 text-sm text-earth-brown/80 dark:text-earth-cream/80">
+                                    <div className="mt-auto space-y-2 text-sm text-earth-cream/80">
                                         <div className="flex items-center">
-                                            <Mic className="w-4 h-4 mr-2 text-earth-rust dark:text-earth-orange" />
+                                            <Mic className="w-4 h-4 mr-2 text-earth-orange" />
                                             {talk.event}
                                         </div>
                                         <div className="flex items-center">
-                                            <Calendar className="w-4 h-4 mr-2 text-earth-rust dark:text-earth-orange" />
+                                            <Calendar className="w-4 h-4 mr-2 text-earth-orange" />
                                             {talk.date}
                                         </div>
                                         <div className="flex items-center">
-                                            <MapPin className="w-4 h-4 mr-2 text-earth-rust dark:text-earth-orange" />
+                                            <MapPin className="w-4 h-4 mr-2 text-earth-orange" />
                                             {talk.location}
                                         </div>
                                     </div>

@@ -16,17 +16,6 @@ export default function ContactSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const type = params.get("contact");
-    if (type) {
-      form.setValue("projectType", type);
-      params.delete("contact");
-      const clean = params.toString();
-      window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
-    }
-  }, [form]);
-
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -37,6 +26,17 @@ export default function ContactSection() {
       message: "",
     },
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get("contact");
+    if (type) {
+      form.setValue("projectType", type);
+      params.delete("contact");
+      const clean = params.toString();
+      window.history.replaceState({}, "", clean ? `?${clean}` : window.location.pathname);
+    }
+  }, [form]);
 
   const onSubmit = (data: ContactFormData) => {
     if (honeypotRef.current?.value) {

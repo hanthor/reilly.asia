@@ -105,7 +105,7 @@ export default function TalksSection() {
                             rel="noopener noreferrer"
                             className="block group"
                         >
-                            <Card className="h-full hover:shadow-md transition-shadow bg-white dark:bg-earth-brown border-earth-rust/20 group-hover:border-earth-teal">
+                            <Card className="h-full hover:shadow-md transition-shadow bg-white dark:bg-earth-teal/15 border-earth-rust/20 dark:border-earth-cream/10 group-hover:border-earth-teal dark:group-hover:border-earth-teal">
                                 <CardContent className="p-6 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
                                         <Badge variant={talk.type === "Workshop" ? "default" : "secondary"} className="bg-earth-teal/10 text-earth-teal dark:text-earth-cream hover:bg-earth-teal/20">

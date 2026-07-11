@@ -30,15 +30,29 @@ export default function HeroSection() {
               I work on <strong className="text-earth-cream dark:text-earth-cream">Linux infrastructure</strong> and open source.
               Right now I'm mostly focused on{" "}
               <strong className="text-earth-cream dark:text-earth-cream">bootable containers</strong> — immutable OS images
-              built with OCI and deployed via bootc. I've done support, sysadmin, and consulting work over the last decade,
-              including a stretch at Element running{" "}
-              <strong className="text-earth-cream dark:text-earth-cream">Matrix</strong> for enterprise clients.
+              built with OCI and deployed via bootc. I am the creator and lead developer of{" "}
+              <a href="https://tunaos.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
+                TunaOS
+              </a>, a cloud-native desktop system. Read my latest write-up:{" "}
+              <a href="https://tunaos.org/blog/13-fishes-in-the-sea" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
+                13 Fishes in the Sea: The TunaOS Variant Landscape
+              </a>.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button onClick={scrollToContact} className="bg-earth-rust hover:bg-earth-cream/90 text-earth-cream">
                 <Mail className="mr-2 h-4 w-4" />
                 Get In Touch
+              </Button>
+              <Button
+                variant="outline"
+                asChild
+                className="border-earth-cream text-earth-brown bg-earth-cream hover:bg-earth-cream/95"
+              >
+                <a href="https://tunaos.org" target="_blank" rel="noopener noreferrer">
+                  <Globe className="mr-2 h-4 w-4" />
+                  TunaOS.org
+                </a>
               </Button>
               <Button
                 variant="outline"

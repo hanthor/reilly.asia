@@ -95,7 +95,6 @@ export default function ProjectsSection() {
       JavaScript: "bg-earth-yellow/20 text-earth-yellow",
       Python: "bg-earth-teal/20 text-earth-teal",
       Makefile: "bg-earth-brown/20 text-earth-brown dark:text-earth-cream",
-      Go: "bg-earth-teal/20 text-earth-teal",
     };
     return colors[language] || "bg-gray-100 text-gray-700";
   };

@@ -65,6 +65,15 @@ export default function Navigation() {
                 {link.label}
               </button>
             ))}
+            <a
+              href="https://tunaos.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-earth-orange dark:text-earth-orange hover:text-earth-teal dark:hover:text-earth-teal transition-colors font-bold flex items-center space-x-1"
+            >
+              <span>TunaOS</span>
+              <Globe size={16} />
+            </a>
           </div>
 
           {/* Social Links & Theme Toggle */}
@@ -102,6 +111,14 @@ export default function Navigation() {
                     {link.label}
                   </button>
                 ))}
+                <a
+                  href="https://tunaos.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-left text-earth-orange dark:text-earth-orange hover:text-earth-teal dark:hover:text-earth-teal transition-colors font-bold flex items-center space-x-1"
+                >
+                  <span>TunaOS ↗</span>
+                </a>
                 
                 <div className="border-t pt-6">
                   <div className="flex justify-between items-center">

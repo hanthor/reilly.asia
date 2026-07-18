@@ -17,6 +17,8 @@ export default function HeroSection() {
               <img
                 src="/profile.png"
                 alt="James Reilly"
+                width={256}
+                height={256}
                 className="w-64 h-64 rounded-full object-cover shadow-lg border-4 border-white"
               />
             </div>
@@ -27,16 +29,17 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-xl text-earth-cream dark:text-earth-cream mb-8 leading-relaxed max-w-3xl">
-              I work on <strong className="text-earth-cream dark:text-earth-cream">Linux infrastructure</strong> and open source.
-              Right now I'm mostly focused on{" "}
-              <strong className="text-earth-cream dark:text-earth-cream">bootable containers</strong> — immutable OS images
+              I'm a freelance <strong className="text-earth-cream dark:text-earth-cream">IT systems administration consultant</strong>, based
+              in India and working mostly with clients in the U.S. — open to opportunities anywhere. Alongside consulting,
+              I'm active in <strong className="text-earth-cream dark:text-earth-cream">open source advocacy</strong>, focused right now
+              on <strong className="text-earth-cream dark:text-earth-cream">bootable containers</strong> — immutable OS images
               built with OCI and deployed via bootc. I am the creator and lead developer of{" "}
               <a href="https://tunaos.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
                 TunaOS
               </a>, a cloud-native desktop system. Read my latest write-up:{" "}
               <a href="https://tunaos.org/blog/13-fishes-in-the-sea" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
                 13 Fishes in the Sea: The TunaOS Variant Landscape
-              </a>.
+              </a>. Looking for help with infrastructure, automation, or training? <strong className="text-earth-cream dark:text-earth-cream">I'm available for consulting</strong> — get in touch below.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

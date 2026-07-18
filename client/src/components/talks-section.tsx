@@ -104,6 +104,7 @@ export default function TalksSection() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block group"
+                            aria-label={`${talk.title} — ${talk.type} at ${talk.event}, ${talk.date}`}
                         >
                             <Card className="h-full hover:shadow-lg transition-shadow bg-earth-teal dark:bg-earth-teal/30 border-earth-teal/50 dark:border-earth-cream/10 group-hover:border-earth-orange">
                                 <CardContent className="p-6 flex flex-col h-full">

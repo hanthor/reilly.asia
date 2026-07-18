@@ -1,13 +1,6 @@
-import { Github, Linkedin, MessageSquare, Globe } from "lucide-react";
+import { socialLinksWithWebsite } from "@/lib/social-links";
 
 export default function Footer() {
-  const socialLinks = [
-    { icon: Github, href: "https://github.com/hanthor", label: "GitHub" },
-    { icon: Linkedin, href: "https://www.linkedin.com/in/jreilly112/", label: "LinkedIn" },
-    { icon: MessageSquare, href: "https://matrix.to/#/@james:reilly.asia", label: "Matrix" },
-    { icon: Globe, href: "http://reilly.asia", label: "Website" },
-  ];
-
   return (
     <footer className="bg-earth-brown dark:bg-black text-earth-cream py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,7 +13,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center space-x-6">
-            {socialLinks.map(({ icon: Icon, href, label }) => (
+            {socialLinksWithWebsite.map(({ icon: Icon, href, label }) => (
               <a
                 key={label}
                 href={href}

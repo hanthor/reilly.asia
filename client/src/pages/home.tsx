@@ -1,5 +1,6 @@
 import Navigation from "@/components/navigation";
 import HeroSection from "@/components/hero-section";
+import AboutSection from "@/components/about-section";
 import ExpertiseSection from "@/components/expertise-section";
 import ConsultingSection from "@/components/consulting-section";
 import ExperienceSection from "@/components/experience-section";
@@ -12,13 +13,16 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <Navigation />
-      <HeroSection />
-      <ExpertiseSection />
-      <ConsultingSection />
-      <ExperienceSection />
-      <ProjectsSection />
-      <TalksSection />
-      <ContactSection />
+      <main>
+        <HeroSection />
+        <AboutSection />
+        <ExpertiseSection />
+        <ConsultingSection />
+        <ExperienceSection />
+        <ProjectsSection />
+        <TalksSection />
+        <ContactSection />
+      </main>
       <Footer />
     </div>
   );

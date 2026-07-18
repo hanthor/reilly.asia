@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Menu, Github, Linkedin, Globe, MessageSquare } from "lucide-react";
+import { Menu, Globe } from "lucide-react";
+import { socialLinks } from "@/lib/social-links";
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,12 +32,6 @@ export default function Navigation() {
     { label: "Contact", href: "contact" },
   ];
 
-  const socialLinks = [
-    { icon: Github, href: "https://github.com/hanthor", label: "GitHub" },
-    { icon: Linkedin, href: "https://www.linkedin.com/in/jreilly112/", label: "LinkedIn" },
-    { icon: MessageSquare, href: "https://matrix.to/#/@james:reilly.asia", label: "Matrix" },
-  ];
-
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
       isScrolled ? "bg-earth-cream/90 dark:bg-earth-brown/90 backdrop-blur-sm border-b border-earth-rust dark:border-earth-rust shadow-sm" : "bg-transparent"
@@ -48,6 +43,8 @@ export default function Navigation() {
               <img
                 src="/profile.png"
                 alt="James Reilly"
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-full object-cover"
               />
             </div>

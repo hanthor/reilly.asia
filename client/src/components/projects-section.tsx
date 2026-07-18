@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, GitFork, ExternalLink, Github } from "lucide-react";
 import { fetchGitHubUser, fetchGitHubRepos } from "@/lib/github-api";
+import { LinkedBadge } from "@/components/linked-badge";
+
+const tagLinks: Record<string, string> = {
+  bootc: "https://bootc.io/",
+  Fedora: "https://fedoraproject.org/",
+  AlmaLinux: "https://almalinux.org/",
+  CentOS: "https://www.centos.org/",
+};
 
 interface FeaturedProject {
   name: string;
@@ -126,7 +134,7 @@ export default function ProjectsSection() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       {project.logo ? (
-                        <img src={project.logo} alt={`${project.name} logo`} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={project.logo} alt={`${project.name} logo`} width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover" />
                       ) : (
                         <Github className="w-5 h-5 text-earth-brown dark:text-earth-cream" />
                       )}
@@ -140,33 +148,14 @@ export default function ProjectsSection() {
                   <p className="text-earth-brown dark:text-earth-cream mb-4 flex-grow">{project.description}</p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tags.map((tag, tagIndex) => {
-                      const tagLinks: Record<string, string> = {
-                        "bootc": "https://bootc.io/",
-                        "Fedora": "https://fedoraproject.org/",
-                        "AlmaLinux": "https://almalinux.org/",
-                        "CentOS": "https://www.centos.org/",
-                      };
-                      const url = tagLinks[tag];
-                      const badge = (
-                        <Badge key={tagIndex} variant="outline" className="text-xs border-earth-rust text-earth-rust">
-                          {tag}
-                        </Badge>
-                      );
-
-                      return url ? (
-                        <a
-                          key={tagIndex}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="no-underline hover:opacity-80 transition-opacity"
-                          style={{ color: 'inherit' }}
-                        >
-                          {badge}
-                        </a>
-                      ) : badge;
-                    })}
+                    {project.tags.map((tag) => (
+                      <LinkedBadge
+                        key={tag}
+                        tag={tag}
+                        links={tagLinks}
+                        className="text-xs border-earth-rust text-earth-rust"
+                      />
+                    ))}
                   </div>
 
                   <div className="flex items-center justify-between mt-auto">

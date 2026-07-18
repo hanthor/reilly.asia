@@ -159,36 +159,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-
-/* Custom background pattern */
-.striped-background {
-  background: linear-gradient(
-    to bottom,
-    var(--earth-teal) 0%,
-    var(--earth-teal) 60%,
-    var(--earth-cream) 60%,
-    var(--earth-cream) 90%,
-    var(--earth-rust) 90%,
-    var(--earth-rust) 100%
-  );
-}
-
 /* Link styles */
 a {
   color: var(--earth-teal);

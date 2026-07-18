@@ -1,8 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, ExternalLink } from "lucide-react";
+import { Briefcase } from "lucide-react";
+import { LinkedBadge } from "@/components/linked-badge";
 
-
+const tagLinks: Record<string, string> = {
+  Matrix: "https://matrix.org",
+  Moodle: "https://moodle.org",
+  SCCM: "https://www.microsoft.com/en-us/mem/configmgr",
+  JAMF: "https://www.jamf.com",
+};
 
 export default function ExperienceSection() {
   const workExperience = [
@@ -92,7 +98,7 @@ export default function ExperienceSection() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     {job.logo ? (
-                      <img src={job.logo} alt={`${job.company} logo`} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={job.logo} alt={`${job.company} logo`} width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <Briefcase className="w-5 h-5" />
                     )}
@@ -102,37 +108,17 @@ export default function ExperienceSection() {
                     {job.date}
                   </Badge>
                 </div>
-                <h4 className="text-lg font-semibold ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'} mb-2">{job.title}</h4>
+                <h4 className={`text-lg font-semibold ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'} mb-2`}>{job.title}</h4>
                 <p className="mb-4">{job.description}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {job.tags.map((tag, tagIndex) => {
-                    const tagLinks: Record<string, string> = {
-                      "Matrix": "https://matrix.org",
-                      "Moodle": "https://moodle.org",
-                      "SCCM": "https://www.microsoft.com/en-us/mem/configmgr",
-                      "JAMF": "https://www.jamf.com"
-                    };
-                    const url = tagLinks[tag];
-
-                    const badge = (
-                      <Badge key={tagIndex} variant="outline" className={`text-xs ${job.forceLightText ? 'text-earth-cream border-earth-cream' : 'text-earth-brown border-earth-brown dark:text-earth-cream'}`}>
-                        {tag}
-                      </Badge>
-                    );
-
-                    return url ? (
-                      <a
-                        key={tagIndex}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="no-underline hover:opacity-80 transition-opacity"
-                        style={{ color: 'inherit' }}
-                      >
-                        {badge}
-                      </a>
-                    ) : badge;
-                  })}
+                  {job.tags.map((tag) => (
+                    <LinkedBadge
+                      key={tag}
+                      tag={tag}
+                      links={tagLinks}
+                      className={`text-xs ${job.forceLightText ? 'text-earth-cream border-earth-cream' : 'text-earth-brown border-earth-brown dark:text-earth-cream'}`}
+                    />
+                  ))}
                 </div>
               </CardContent>
             </Card>

@@ -40,7 +40,7 @@ export default function ConsultingSection() {
                 <div className="text-center mb-12">
                     <h2 className="text-4xl font-heading font-bold text-earth-brown dark:text-earth-cream mb-4">Consulting Services</h2>
                     <p className="text-xl text-earth-brown/80 dark:text-earth-cream/80 max-w-3xl mx-auto">
-                        Here's what I can help with.
+                        Available for freelance engagements — mostly working with U.S. clients remotely, but open to opportunities anywhere.
                     </p>
                 </div>
 

@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData } from "@shared/schema";
-import { Linkedin, Github, MessageSquare, Globe, Shield, Mail } from "lucide-react";
+import { Shield } from "lucide-react";
+import { socialLinks } from "@/lib/social-links";
 
 export default function ContactSection() {
   const { toast } = useToast();
@@ -73,32 +74,6 @@ Sent from James Reilly's portfolio website`;
     }, 1000);
   };
 
-  const contactMethods = [
-    {
-      icon: Linkedin,
-      title: "LinkedIn",
-      subtitle: "Professional Network",
-      url: "https://www.linkedin.com/in/jreilly112/",
-      color: "text-earth-teal"
-    },
-    {
-      icon: Github,
-      title: "GitHub",
-      subtitle: "@hanthor",
-      url: "https://github.com/hanthor",
-      color: "text-earth-brown dark:text-earth-cream"
-    },
-    {
-      icon: MessageSquare,
-      title: "Matrix",
-      subtitle: "@james:reilly.asia",
-      url: "https://matrix.to/#/@james:reilly.asia",
-      color: "text-earth-orange"
-    }
-  ];
-
-
-
   return (
     <section id="contact" className="py-16 bg-earth-cream dark:bg-earth-brown">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -120,10 +95,10 @@ Sent from James Reilly's portfolio website`;
             </div>
 
             <div className="space-y-4">
-              {contactMethods.map((method, index) => (
+              {socialLinks.map((method, index) => (
                 <a
                   key={index}
-                  href={method.url}
+                  href={method.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center p-4 bg-earth-cream dark:bg-earth-brown rounded-lg border border-earth-rust dark:border-earth-cream/20 hover:shadow-sm transition-shadow"
@@ -256,8 +231,6 @@ Sent from James Reilly's portfolio website`;
             </CardContent>
           </Card>
         </div>
-
-
       </div>
     </section>
   );

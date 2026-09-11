@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Linkedin, Github, MessageSquare, Info } from "lucide-react";
+import { Info } from "lucide-react";
+import { socialLinks } from "@/lib/social-links";
 
 const CONTACT_EMAIL = "jreilly1821@gmail.com";
 
@@ -14,30 +15,6 @@ const projectTypes = [
   { value: "sysadmin", label: "Systems Administration" },
   { value: "consulting", label: "General Consulting" },
   { value: "other", label: "Other" },
-];
-
-const contactMethods = [
-  {
-    icon: Linkedin,
-    title: "LinkedIn",
-    subtitle: "Professional Network",
-    url: "https://www.linkedin.com/in/jreilly112/",
-    color: "text-earth-teal dark:text-earth-orange",
-  },
-  {
-    icon: Github,
-    title: "GitHub",
-    subtitle: "@hanthor",
-    url: "https://github.com/hanthor",
-    color: "text-earth-brown dark:text-earth-cream",
-  },
-  {
-    icon: MessageSquare,
-    title: "Matrix",
-    subtitle: "@james:reilly.asia",
-    url: "https://matrix.to/#/@james:reilly.asia",
-    color: "text-earth-rust dark:text-earth-orange",
-  },
 ];
 
 const labelClass = "text-earth-cream";
@@ -128,6 +105,7 @@ Sent from James Reilly's portfolio website`;
   const describedBy = (field: keyof Errors) => (errors[field] ? `${field}-error` : undefined);
 
   return (
+
     <section id="contact" className="py-16 bg-earth-cream dark:bg-earth-brown">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
@@ -148,11 +126,12 @@ Sent from James Reilly's portfolio website`;
             </div>
 
             <div className="space-y-4">
-              {contactMethods.map((method) => (
+              {socialLinks.map((method) => (
                 <a
                   key={method.title}
-                  href={method.url}
+                  href={method.href}
                   target="_blank"
+
                   rel="noopener noreferrer"
                   className="flex items-center p-4 bg-earth-cream dark:bg-earth-brown rounded-lg border border-earth-rust dark:border-earth-cream/20 hover:shadow-md hover:border-earth-teal dark:hover:border-earth-orange transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >

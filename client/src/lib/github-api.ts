@@ -1,4 +1,5 @@
 import { GitHubUser, GitHubRepo } from "@/types/github";
+import { EXTERNAL_REPOS } from "@/lib/projects-config";
 
 const GITHUB_USERNAME = "hanthor";
 
@@ -23,14 +24,7 @@ export async function fetchGitHubUser(): Promise<GitHubUser | null> {
 export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
   try {
     // Repositories to fetch specifically
-    const externalRepos = [
-      "ublue-os/bluefin-lts",
-      "projectbluefin/bootc-installer",
-      "projectbluefin/dakota",
-      "tuna-os/tunaos",
-      "almalinux/bootc-images",
-      "projectbluefin/knuckle",
-    ];
+    const externalRepos = EXTERNAL_REPOS;
 
     // Fetch user repos
     const userReposUrl = import.meta.env.DEV

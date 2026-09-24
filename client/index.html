@@ -2,19 +2,80 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>James Reilly - Freelance IT Systems Consultant & Open Source Advocate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>James Reilly — Freelance IT Systems Consultant &amp; Open Source Advocate</title>
     <meta name="description" content="Freelance IT systems administration consulting and open source advocacy by James Reilly. Based in India, working primarily with U.S. clients — available for engagements anywhere in bootc, Matrix infrastructure, and systems administration.">
-    <meta property="og:title" content="James Reilly - Freelance IT Systems Consultant & Open Source Advocate">
-    <meta property="og:description" content="Freelance IT systems administration consulting and open source advocacy by James Reilly. Based in India, working primarily with U.S. clients — available for engagements anywhere.">
+    <link rel="canonical" href="https://reilly.asia/">
+    <meta name="author" content="James Reilly">
+    <meta name="theme-color" content="#277262">
+
+    <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website">
-    <link rel="icon" type="image/png" href="/profile.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <meta property="og:site_name" content="James Reilly">
+    <meta property="og:url" content="https://reilly.asia/">
+    <meta property="og:title" content="James Reilly — Freelance IT Systems Consultant &amp; Open Source Advocate">
+    <meta property="og:description" content="Freelance IT systems administration consulting and open source advocacy by James Reilly. Based in India, working primarily with U.S. clients — available for engagements anywhere.">
+    <meta property="og:image" content="https://reilly.asia/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="James Reilly — Freelance IT systems consultant, creator of TunaOS">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="James Reilly — Freelance IT Systems Consultant &amp; Open Source Advocate">
+    <meta name="twitter:description" content="Freelance IT systems administration consulting and open source advocacy. bootc, Matrix, and systems administration.">
+    <meta name="twitter:image" content="https://reilly.asia/og-image.png">
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Self-hosted font + hero portrait, fetched in parallel with the JS bundle -->
+    <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/profile.webp" as="image" type="image/webp" fetchpriority="high">
+
+    <!-- Apply the saved/system theme before first paint (no light flash in dark mode) -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("portfolio-theme") || "system";
+          if (t === "system") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          document.documentElement.classList.add(t);
+          document.documentElement.style.colorScheme = t;
+        } catch (e) {}
+      })();
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "James Reilly",
+        "url": "https://reilly.asia/",
+        "image": "https://reilly.asia/profile.webp",
+        "jobTitle": "Freelance IT Systems Consultant",
+        "worksFor": { "@type": "Organization", "name": "James Reilly Consulting LLC" },
+        "knowsAbout": ["bootc", "Bootable containers", "Matrix", "Linux", "Systems administration"],
+        "sameAs": [
+          "https://github.com/hanthor",
+          "https://www.linkedin.com/in/jreilly112/",
+          "https://matrix.to/#/@james:reilly.asia",
+          "https://tunaos.org"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width:40rem;margin:4rem auto;padding:0 1rem;font-family:system-ui,sans-serif;line-height:1.6">
+        <h1>James Reilly</h1>
+        <p>Freelance IT systems administration consultant based in India, working mostly with U.S. clients.
+          Creator and lead developer of <a href="https://tunaos.org">TunaOS</a>; co-chair of the AlmaLinux Atomic SIG.</p>
+        <p><a href="https://github.com/hanthor">GitHub</a> ·
+          <a href="https://www.linkedin.com/in/jreilly112/">LinkedIn</a> ·
+          <a href="https://matrix.to/#/@james:reilly.asia">Matrix</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

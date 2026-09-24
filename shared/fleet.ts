@@ -256,6 +256,6 @@ export function summarizeFleet(hosts: Record<string, FleetFacts | null | undefin
     memoryGb += f.hardware.memory_gb ?? 0;
     threads += f.hardware.cpu_threads ?? 0;
   }
-  const os = [...osCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const os = Array.from(osCount.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   return { reporting, total: names.length, os, memoryGb: Math.round(memoryGb * 10) / 10, threads };
 }

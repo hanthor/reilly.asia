@@ -16,7 +16,13 @@ export interface Host {
   tags: string[];
   state: HostState;
   href?: string;
+  /** Anchor slug (#host-<slug>); defaults to name. */
+  slug?: string;
+  /** Static hardware/OS facts for machines that do not publish their own. */
+  specs?: [string, string][];
 }
+
+export const hostAnchor = (h: Pick<Host, "name" | "slug">) => `host-${h.slug ?? h.name}`;
 
 export interface HostGroup {
   id: string;
@@ -34,7 +40,7 @@ export const FLEET: HostGroup[] = [
       {
         name: "himachal",
         kind: "Laptop",
-        role: "Laptop workstation. Also runs the timers that operate the Hive (rotation, watchdog, peak windows).",
+        role: "Everyday laptop workstation.",
         tags: ["x86_64", "Bluefin"],
         state: "active",
         href: handbook("desktop/himachal/index.html"),
@@ -102,6 +108,50 @@ export const FLEET: HostGroup[] = [
       },
     ],
   },
+];
+
+// Talos nodes are not Ansible-managed (no SSH), so they publish no facts;
+// these specs come from the cluster handbooks. No addresses or instance IDs.
+export const CLUSTER_NODES: HostGroup[] = [
+  {
+    id: "tunaos-nodes",
+    title: "TunaOS cluster nodes",
+    blurb: "Two EC2 nodes in eu-north-1, both in OpenTofu. The control plane is untainted, so it runs workloads too.",
+    hosts: [
+      {
+        name: "control-plane",
+        slug: "tunaos-control-plane",
+        kind: "AWS EC2 · control plane",
+        role: "etcd and the Kubernetes API, plus the Hive, whose data volume is bound to this node.",
+        tags: ["Talos", "x86_64", "eu-north-1"],
+        state: "active",
+        href: handbook("servers/aws-k8s/cluster.html#nodes"),
+        specs: [
+          ["Model", "Amazon EC2 m6i.xlarge"],
+          ["CPU", "4 vCPU · Intel Xeon"],
+          ["Memory", "16 GB"],
+          ["OS", "Talos Linux v1.13.9"],
+          ["K8s", "v1.36.2"],
+        ],
+      },
+      {
+        name: "worker",
+        slug: "tunaos-worker",
+        kind: "AWS EC2 · worker",
+        role: "Matrix/ESS and the Traefik ingress that public DNS points at.",
+        tags: ["Talos", "x86_64", "eu-north-1"],
+        state: "active",
+        href: handbook("servers/aws-k8s/cluster.html#nodes"),
+        specs: [
+          ["Model", "Amazon EC2 m6i.xlarge"],
+          ["CPU", "4 vCPU · Intel Xeon"],
+          ["Memory", "16 GB"],
+          ["OS", "Talos Linux v1.13.9"],
+          ["K8s", "v1.36.2"],
+        ],
+      },
+    ],
+  },
   {
     id: "home-cluster",
     title: "Home Talos cluster",
@@ -113,7 +163,12 @@ export const FLEET: HostGroup[] = [
         role: "Intel node that runs the Talos control plane.",
         tags: ["Talos", "x86_64"],
         state: "offline",
-        href: handbook("servers/talos-k8s/cluster.html"),
+        href: handbook("servers/talos-k8s/bihar/index.html"),
+        specs: [
+          ["Model", "ASRock board · Intel CPU"],
+          ["OS", "Talos Linux v1.13.2"],
+          ["K8s", "v1.36.1"],
+        ],
       },
       {
         name: "karnataka",
@@ -121,7 +176,15 @@ export const FLEET: HostGroup[] = [
         role: "AMD Strix Halo APU, with the GPU exposed to Kubernetes for local AI inference.",
         tags: ["Talos", "AMD GPU"],
         state: "offline",
-        href: handbook("servers/talos-k8s/cluster.html"),
+        href: handbook("servers/talos-k8s/karnataka/index.html"),
+        specs: [
+          ["Model", "Framework · Strix Halo"],
+          ["CPU", "AMD Ryzen AI MAX+ 395 · 32 threads"],
+          ["Memory", "62 GB unified"],
+          ["GPU", "AMD Radeon 8060S"],
+          ["OS", "Talos Linux v1.13.2"],
+          ["K8s", "v1.36.1"],
+        ],
       },
     ],
   },

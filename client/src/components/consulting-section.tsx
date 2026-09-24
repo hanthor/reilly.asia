@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CheckCircle2, ArrowRight, Wrench, BookOpen, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,10 +28,9 @@ export default function ConsultingSection() {
     ];
 
     const scrollToContact = (type: string) => {
-        const url = new URL(window.location.href);
-        url.searchParams.set("contact", type);
-        window.history.replaceState({}, "", url.toString());
-        document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+        window.dispatchEvent(new CustomEvent("contact:preselect", { detail: type }));
+        document.getElementById("contact")?.scrollIntoView();
+        window.history.replaceState(null, "", "#contact");
     };
 
     return (
@@ -48,10 +47,10 @@ export default function ConsultingSection() {
                     {services.map((service, index) => (
                         <Card key={index} className="flex flex-col border-earth-rust/20 hover:border-earth-teal transition-colors bg-earth-cream dark:bg-earth-brown dark:border-earth-rust">
                             <CardHeader>
-                                <service.icon className="w-8 h-8 text-earth-teal dark:text-earth-orange mb-4" />
-                                <CardTitle className="text-xl font-bold text-earth-brown dark:text-earth-cream">
+                                <service.icon className="w-8 h-8 text-earth-teal dark:text-earth-orange mb-4" aria-hidden="true" />
+                                <h3 className="text-xl font-heading font-bold leading-none tracking-tight text-earth-brown dark:text-earth-cream">
                                     {service.title}
-                                </CardTitle>
+                                </h3>
                             </CardHeader>
                             <CardContent className="flex-1 flex flex-col">
                                 <p className="text-earth-brown/80 dark:text-earth-cream/80 mb-6 flex-1">
@@ -60,17 +59,17 @@ export default function ConsultingSection() {
                                 <ul className="space-y-3 mb-8">
                                     {service.features.map((feature, fIndex) => (
                                         <li key={fIndex} className="flex items-start">
-                                            <CheckCircle2 className="w-5 h-5 text-earth-teal dark:text-earth-orange mr-2 shrink-0" />
+                                            <CheckCircle2 className="w-5 h-5 text-earth-teal dark:text-earth-orange mr-2 shrink-0" aria-hidden="true" />
                                             <span className="text-sm text-earth-brown dark:text-earth-cream">{feature}</span>
                                         </li>
                                     ))}
                                 </ul>
                                 <Button
                                     onClick={() => scrollToContact(service.contactType)}
-                                    className="w-full bg-earth-rust hover:bg-earth-rust/90 text-white dark:bg-earth-orange dark:text-earth-brown mt-auto group"
+                                    className="w-full bg-earth-rust hover:bg-earth-rust/90 text-earth-cream dark:bg-earth-orange dark:hover:bg-earth-orange/90 dark:text-earth-brown mt-auto group"
                                 >
-                                    Get in Touch
-                                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    Get in Touch<span className="sr-only"> about {service.title}</span>
+                                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                                 </Button>
                             </CardContent>
                         </Card>

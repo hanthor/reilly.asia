@@ -8,9 +8,11 @@
 //                         is always as fresh as the book with no site rebuild
 //   /infra/api/status   → live public-endpoint health, cached 60s
 //   /infra/api/activity → repo automation counts from GitHub, cached 1h
+//   /infra/api/fleet    → per-machine device facts from the fleet-facts branch,
+//                         sanitized, cached 10 min
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
 
-import { buildActivity, buildStatus, activityIsEmpty, type ApiEnv } from "./api";
+import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
 import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
@@ -24,6 +26,8 @@ interface Ctx {
 const STATUS_TTL = 60;
 const ACTIVITY_TTL = 3600;
 const ACTIVITY_EMPTY_TTL = 300;
+const FLEET_TTL = 600;
+const FLEET_EMPTY_TTL = 60;
 
 function methodNotAllowed(): Response {
   return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
@@ -116,6 +120,11 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildActivity(env);
           return { body, ttl: activityIsEmpty(body) ? ACTIVITY_EMPTY_TTL : ACTIVITY_TTL };
+        });
+      case "api-fleet":
+        return cachedJson(request, ctx, async () => {
+          const body = await buildFleet();
+          return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
         });
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {

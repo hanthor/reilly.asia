@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@/components/infra/infra.css";
 import { InfraHeader } from "@/components/infra/header";
 import { InfraHero } from "@/components/infra/hero";
@@ -34,7 +35,21 @@ function useDocumentMeta(title: string, description: string) {
   }, [title, description]);
 }
 
+// Only this page uses React Query, so its client lives here rather than in
+// App.tsx — the home page's bundle stays free of it.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } },
+});
+
 export default function Infra() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <InfraPage />
+    </QueryClientProvider>
+  );
+}
+
+function InfraPage() {
   useDocumentMeta(TITLE, DESCRIPTION);
   return (
     <div className="infra min-h-screen font-sans antialiased">

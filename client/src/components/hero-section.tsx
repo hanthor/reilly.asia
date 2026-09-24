@@ -78,7 +78,7 @@ export default function HeroSection() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap gap-x-6 gap-y-2 justify-center lg:justify-start text-sm text-earth-cream">
           <div className="flex items-center">
             <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
-            India
+            Based in India · Ohio, USA company
           </div>
           <div className="flex items-center">
             <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />

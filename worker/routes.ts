@@ -11,6 +11,7 @@ export type InfraRoute =
   | { kind: "handbook"; upstream: string }
   | { kind: "api-status" }
   | { kind: "api-activity" }
+  | { kind: "api-fleet" }
   | { kind: "api-not-found" }
   | { kind: "pass" };
 
@@ -21,6 +22,7 @@ export function classifyInfraPath(pathname: string, search = ""): InfraRoute {
 
   if (pathname === "/infra/api/status") return { kind: "api-status" };
   if (pathname === "/infra/api/activity") return { kind: "api-activity" };
+  if (pathname === "/infra/api/fleet") return { kind: "api-fleet" };
   if (pathname === "/infra/api" || pathname.startsWith("/infra/api/")) return { kind: "api-not-found" };
 
   if (pathname === HANDBOOK_PREFIX) return { kind: "redirect", location: `${HANDBOOK_PREFIX}/${search}` };

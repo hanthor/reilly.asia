@@ -16,6 +16,8 @@ describe("classifyInfraPath", () => {
   it("routes the API", () => {
     expect(classifyInfraPath("/infra/api/status")).toEqual({ kind: "api-status" });
     expect(classifyInfraPath("/infra/api/activity")).toEqual({ kind: "api-activity" });
+    expect(classifyInfraPath("/infra/api/fleet")).toEqual({ kind: "api-fleet" });
+    expect(classifyInfraPath("/infra/api/fleet/punjab")).toEqual({ kind: "api-not-found" });
     expect(classifyInfraPath("/infra/api/nope")).toEqual({ kind: "api-not-found" });
     expect(classifyInfraPath("/infra/api")).toEqual({ kind: "api-not-found" });
   });

@@ -1,5 +1,7 @@
-// Serves the static site. The Worker runs first only for /infra/* (see
-// wrangler.jsonc):
+// Serves the static site. The Worker runs first for every request (see
+// wrangler.jsonc) so it can send http:// and www. to https://reilly.asia;
+// everything outside /infra then goes straight to the static assets.
+// Under /infra:
 //   /infra/             → the SPA's infrastructure landing page
 //   /infra/handbook/*   → proxied from the handbook's GitHub Pages build
 //                         (hanthor/dotfiles → hanthor.github.io/dotfiles), so it
@@ -9,7 +11,7 @@
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
 
 import { buildActivity, buildStatus, activityIsEmpty, type ApiEnv } from "./api";
-import { classifyInfraPath, rewriteHandbookLocation } from "./routes";
+import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -95,6 +97,8 @@ async function landing(request: Request, env: Env): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
+    const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
+    if (canonical) return Response.redirect(canonical, 301);
     const route = classifyInfraPath(url.pathname, url.search);
     if (route.kind === "pass") return env.ASSETS.fetch(request);
     if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();

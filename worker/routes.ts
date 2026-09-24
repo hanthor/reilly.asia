@@ -41,3 +41,29 @@ export function rewriteHandbookLocation(location: string, upstream: string): str
   const rest = loc.pathname.slice(origin.pathname.length) || "/";
   return HANDBOOK_PREFIX + rest + loc.search;
 }
+
+// Production hostnames only. The visitor's real scheme comes from Cloudflare's
+// cf-visitor header, not request.url: `wrangler dev` rewrites request.url to
+// the configured route (http://reilly.asia/...) and sends no cf-visitor, so
+// trusting the URL would redirect-loop local development.
+const CANONICAL_HOST = "reilly.asia";
+const OUR_HOSTS = new Set([CANONICAL_HOST, "www." + CANONICAL_HOST]);
+
+/** Visitor scheme from a cf-visitor header value ({"scheme":"http"}), or null. */
+export function visitorScheme(cfVisitor: string | null): string | null {
+  if (!cfVisitor) return null;
+  try {
+    const scheme = (JSON.parse(cfVisitor) as { scheme?: unknown }).scheme;
+    return typeof scheme === "string" ? scheme : null;
+  } catch {
+    return null;
+  }
+}
+
+/** https://reilly.asia/<same path> when the visitor came over plain http or
+ *  via www.; null when already canonical or not one of our hosts. */
+export function canonicalRedirect(url: URL, scheme: string | null): string | null {
+  if (!OUR_HOSTS.has(url.hostname)) return null;
+  if (scheme !== "http" && url.hostname === CANONICAL_HOST) return null;
+  return `https://${CANONICAL_HOST}${url.pathname}${url.search}`;
+}

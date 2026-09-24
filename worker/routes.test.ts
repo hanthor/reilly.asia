@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyInfraPath, rewriteHandbookLocation } from "./routes";
+import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 describe("classifyInfraPath", () => {
   it("passes non-infra paths through", () => {
@@ -42,5 +42,40 @@ describe("rewriteHandbookLocation", () => {
   it("leaves foreign redirects alone", () => {
     expect(rewriteHandbookLocation("https://example.com/dotfiles/x", up)).toBeNull();
     expect(rewriteHandbookLocation("https://hanthor.github.io/dotfilesX/x", up)).toBeNull();
+  });
+});
+
+describe("canonicalRedirect", () => {
+  const r = (u: string, scheme: string | null = "https") => canonicalRedirect(new URL(u), scheme);
+
+  it("leaves canonical https requests alone", () => {
+    expect(r("https://reilly.asia/infra/?x=1")).toBeNull();
+  });
+  it("upgrades visitors who came over plain http, keeping path and query", () => {
+    expect(r("http://reilly.asia/infra/handbook/?q=1", "http")).toBe("https://reilly.asia/infra/handbook/?q=1");
+  });
+  it("folds www into the apex", () => {
+    expect(r("https://www.reilly.asia/")).toBe("https://reilly.asia/");
+    expect(r("http://www.reilly.asia/.well-known/matrix/server", "http")).toBe(
+      "https://reilly.asia/.well-known/matrix/server",
+    );
+  });
+  it("does not loop under wrangler dev (http URL, no cf-visitor)", () => {
+    expect(r("http://reilly.asia/", null)).toBeNull();
+  });
+  it("never touches other hosts", () => {
+    expect(r("http://localhost:8787/", "http")).toBeNull();
+    expect(r("http://reilly-asia.example.workers.dev/", "http")).toBeNull();
+  });
+});
+
+describe("visitorScheme", () => {
+  it("parses cf-visitor", () => {
+    expect(visitorScheme('{"scheme":"http"}')).toBe("http");
+    expect(visitorScheme('{"scheme":"https"}')).toBe("https");
+  });
+  it("is null for missing or malformed headers", () => {
+    expect(visitorScheme(null)).toBeNull();
+    expect(visitorScheme("not json")).toBeNull();
   });
 });

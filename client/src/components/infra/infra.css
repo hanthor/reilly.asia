@@ -1,0 +1,101 @@
+/* Scoped tokens for the /infra landing page. The earth palette, tuned for
+   text contrast on both grounds; everything else on the page reads these. */
+.infra {
+  --ix-bg: hsl(42 30% 91%);
+  --ix-surface: hsl(42 38% 96%);
+  --ix-surface-2: hsl(40 24% 86%);
+  --ix-line: hsl(35 18% 77%);
+  --ix-ink: hsl(20 18% 16%);
+  --ix-muted: hsl(20 10% 36%);
+  --ix-teal: hsl(167 58% 27%);
+  --ix-teal-fill: hsl(167 49% 42%);
+  --ix-teal-soft: hsl(167 40% 42% / 0.12);
+  --ix-rust: hsl(15 72% 40%);
+  --ix-rust-soft: hsl(15 70% 45% / 0.12);
+  --ix-orange: hsl(30 80% 38%);
+  --ix-orange-fill: hsl(35 84% 62%);
+  --ix-orange-soft: hsl(35 84% 55% / 0.16);
+  --ix-on-fill: hsl(42 38% 97%);
+  --ix-dot: hsl(20 14% 25% / 0.10);
+  --ix-shadow: 0 1px 0 hsl(20 20% 20% / 0.04), 0 8px 24px -12px hsl(20 30% 20% / 0.18);
+
+  background-color: var(--ix-bg);
+  color: var(--ix-ink);
+}
+
+.dark .infra {
+  --ix-bg: hsl(20 14% 8%);
+  --ix-surface: hsl(20 14% 12%);
+  --ix-surface-2: hsl(20 12% 16%);
+  --ix-line: hsl(20 10% 23%);
+  --ix-ink: hsl(42 30% 89%);
+  --ix-muted: hsl(38 14% 66%);
+  --ix-teal: hsl(167 50% 58%);
+  --ix-teal-fill: hsl(167 49% 40%);
+  --ix-teal-soft: hsl(167 50% 50% / 0.12);
+  --ix-rust: hsl(15 78% 66%);
+  --ix-rust-soft: hsl(15 75% 60% / 0.14);
+  --ix-orange: hsl(35 84% 66%);
+  --ix-orange-fill: hsl(35 70% 52%);
+  --ix-orange-soft: hsl(35 84% 60% / 0.12);
+  --ix-on-fill: hsl(42 38% 97%);
+  --ix-dot: hsl(42 30% 89% / 0.07);
+  --ix-shadow: 0 1px 0 hsl(0 0% 0% / 0.2), 0 10px 28px -14px hsl(0 0% 0% / 0.6);
+}
+
+/* The site's global link rule colours every <a> teal (orange once visited).
+   Inside the page, links take --ix-link (default: inherit) so utilities can
+   set it per element without fighting a:visited's specificity. */
+.infra a,
+.infra a:visited {
+  color: var(--ix-link, inherit);
+  text-decoration: none;
+}
+.infra a:hover {
+  text-decoration: none;
+}
+
+.infra :focus-visible {
+  outline: 2px solid var(--ix-teal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.infra .ix-dots {
+  background-image: radial-gradient(var(--ix-dot) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+.infra .ix-mono {
+  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.infra .ix-card {
+  background: var(--ix-surface);
+  border: 1px solid var(--ix-line);
+  border-radius: 14px;
+  box-shadow: var(--ix-shadow);
+}
+
+@keyframes ix-ping {
+  0% { transform: scale(1); opacity: 0.55; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+.infra .ix-ping {
+  animation: ix-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ix-flow {
+  to { stroke-dashoffset: -24; }
+}
+.infra .ix-flow {
+  stroke-dasharray: 5 7;
+  animation: ix-flow 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.infra) { scroll-behavior: auto; }
+  .infra .ix-ping,
+  .infra .ix-flow { animation: none; }
+  .infra * { transition: none !important; }
+}

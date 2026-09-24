@@ -127,9 +127,9 @@ export const CLUSTER_NODES: HostGroup[] = [
         state: "active",
         href: handbook("servers/aws-k8s/cluster.html#nodes"),
         specs: [
-          ["Model", "Amazon EC2 m6i.xlarge"],
-          ["CPU", "4 vCPU · Intel Xeon"],
-          ["Memory", "16 GB"],
+          ["Model", "Amazon EC2 m6i.2xlarge"],
+          ["CPU", "8 vCPU · Intel Xeon"],
+          ["Memory", "32 GB"],
           ["OS", "Talos Linux v1.13.9"],
           ["K8s", "v1.36.2"],
         ],

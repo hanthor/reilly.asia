@@ -205,7 +205,7 @@ export const STACK: StackItem[] = [
   },
   {
     name: "Hive",
-    what: "Open-source AI agent orchestration. Agents triage issues, fix CI and open PRs around the clock.",
-    href: handbook("cluster/hive.html"),
+    what: "Open-source AI agent orchestration that I co-maintain upstream. Agents triage issues, fix CI and open PRs around the clock; hub.tunaos.org shows every Hive.",
+    href: "https://github.com/hivecommons/hive",
   },
 ];

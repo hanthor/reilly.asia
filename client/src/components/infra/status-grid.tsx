@@ -15,7 +15,7 @@ import { StatusDot, toneFor } from "./status-dot";
 import { useInfraStatus, useNow } from "./use-infra-api";
 
 const GROUPS: { id: EndpointGroup; title: string; blurb: string }[] = [
-  { id: "hive", title: "Hive agent fleet", blurb: "Two TunaOS Hives, the TunaOS hub, and a personal Hive." },
+  { id: "hive", title: "Hive agent fleet", blurb: "Two TunaOS Hives, a personal Hive, and the hub that shows them all." },
   { id: "matrix", title: "Matrix", blurb: "Element Server Suite: homeserver, auth service and calls." },
 ];
 

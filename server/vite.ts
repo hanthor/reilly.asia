@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
-import { createServer as createViteServer, createLogger } from "vite";
+import { createServer as createViteServer, createLogger, type ConfigEnv, type UserConfig } from "vite";
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
@@ -21,8 +21,13 @@ export function log(message: string, source = "express") {
 
 export async function setupVite(app: Express, server: Server) {
 
+  // vite.config.ts exports an async config function (it fetches GitHub stats).
+  const resolvedConfig = await (viteConfig as (env: ConfigEnv) => Promise<UserConfig>)({
+    command: "serve",
+    mode: "development",
+  });
   const vite = await createViteServer({
-    ...viteConfig,
+    ...resolvedConfig,
     configFile: false,
     customLogger: {
       ...viteLogger,

@@ -93,7 +93,50 @@
   animation: ix-flow 1.6s linear infinite;
 }
 
+/* Host card reached from the diagram (or a #host-… link). */
+.infra .ix-host:focus-visible,
+.infra .ix-host:focus {
+  outline: none;
+}
+@keyframes ix-flash {
+  0%, 60% { box-shadow: 0 0 0 3px var(--ix-teal), var(--ix-shadow); border-color: var(--ix-teal); }
+  100% { box-shadow: 0 0 0 0 transparent, var(--ix-shadow); }
+}
+.infra .ix-flash {
+  animation: ix-flash 1.8s ease-out;
+}
+
+/* Clickable diagram nodes (<a> inside the SVG). The ring is a drawn rect so
+   it follows the node's rounded shape in every browser. */
+.infra .ix-node {
+  cursor: pointer;
+  outline: none;
+}
+.infra .ix-node .ix-node-box {
+  transition: stroke 120ms ease, fill 120ms ease;
+}
+.infra .ix-node:hover .ix-node-box {
+  stroke: var(--ix-teal);
+}
+.infra .ix-node:hover .ix-node-label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.infra .ix-node .ix-node-ring {
+  fill: none;
+  stroke: var(--ix-teal);
+  stroke-width: 2.5;
+  opacity: 0;
+}
+.infra .ix-node:focus-visible .ix-node-ring {
+  opacity: 1;
+}
+.infra .ix-node:focus-visible {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .infra .ix-flash { animation: none; box-shadow: 0 0 0 3px var(--ix-teal), var(--ix-shadow); }
   html:has(.infra) { scroll-behavior: auto; }
   .infra .ix-ping,
   .infra .ix-flow { animation: none; }

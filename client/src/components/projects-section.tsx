@@ -25,6 +25,25 @@ interface FeaturedProject {
 export default function ProjectsSection() {
   const featuredProjects: FeaturedProject[] = [
     {
+      name: "Hive",
+      repoId: "hivecommons/hive",
+      description: "AI agent orchestration for open source: a supervised fleet of agents that triage, fix, review and ship across a project's repos, with guardrails that scale from advisory to full autonomy. I'm one of its maintainers.",
+      language: "Go",
+      tags: ["AI Agents", "Kubernetes", "Go", "DevOps"],
+      url: "https://github.com/hivecommons/hive",
+      logo: "/hivecommons.png",
+      website: "https://hive.hivecommons.dev/"
+    },
+    {
+      name: "utah",
+      repoId: "projectbluefin/utah",
+      description: "Utahraptor: Bluefin rebuilt on Fedora Hummingbird's hardened bootable base, with the GNOME 51 desktop built from source and an offline, LUKS2-encrypted install verified end to end. Experimental pre-alpha.",
+      language: "Python",
+      tags: ["bootc", "Fedora", "Bluefin", "GNOME"],
+      url: "https://github.com/projectbluefin/utah",
+      logo: "/ublue-os.png"
+    },
+    {
       name: "bluefin-lts",
       repoId: "ublue-os/bluefin-lts",
       description: "Bluefin LTS built on CentOS with bootc — a cloud-native desktop for developers and people who just want a Linux box that stays out of the way.",

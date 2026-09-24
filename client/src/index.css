@@ -1,3 +1,18 @@
+/* Inter, self-hosted (SIL OFL, see /fonts/Inter-OFL.txt) and preloaded from
+   index.html so it is ready before first render — no third-party request,
+   no late swap / layout shift. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-latin-var.woff2") format("woff2-variations"),
+    url("/fonts/inter-latin-var.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,24 +29,27 @@
   --card-foreground: hsl(20, 14%, 25%); /* Brown text */
   --border: hsl(42, 20%, 80%); /* Cream border */
   --input: hsl(42, 20%, 85%); /* Cream input background */
-  --primary: hsl(167, 49%, 42%); /* Teal/turquoise from image */
+  --primary: hsl(167, 49%, 30%); /* Teal (AA with cream text) */
   --primary-foreground: hsl(42, 28%, 89%); /* Cream text on teal */
   --secondary: hsl(35, 84%, 62%); /* Warm orange from image */
   --secondary-foreground: hsl(20, 14%, 25%); /* Brown text on orange */
-  --accent: hsl(167, 49%, 42%); /* Teal accent */
+  --accent: hsl(167, 49%, 30%); /* Teal accent */
   --accent-foreground: hsl(42, 28%, 89%); /* Cream text */
   --destructive: hsl(0, 84%, 60%); /* Red for errors */
   --destructive-foreground: hsl(42, 28%, 89%); /* Cream text */
-  --ring: hsl(167, 49%, 42%); /* Teal ring */
+  --ring: hsl(167, 49%, 30%); /* Teal ring */
   --radius: 0.5rem;
   
-  /* Earthy color scheme from image */
-  --earth-teal: hsl(167, 49%, 42%); /* Main teal */
-  --earth-orange: hsl(35, 84%, 62%); /* Warm orange */
-  --earth-rust: hsl(15, 70%, 45%); /* Rust brown */
-  --earth-cream: hsl(42, 28%, 89%); /* Cream background */
-  --earth-brown: hsl(20, 14%, 25%); /* Rich brown */
-  --earth-yellow: hsl(45, 90%, 55%); /* Golden yellow */
+  /* Earthy palette, stored as bare HSL channels so Tailwind can apply
+     opacity modifiers (bg-earth-teal/20 etc.) — see tailwind.config.ts.
+     teal and rust are a shade darker than the original swatches so cream
+     text on them passes WCAG AA (4.5:1): teal 30% -> 4.6:1, rust 40% -> 4.7:1. */
+  --earth-teal: 167 49% 30%;
+  --earth-orange: 35 84% 62%;
+  --earth-rust: 15 70% 40%;
+  --earth-cream: 42 28% 89%;
+  --earth-brown: 20 14% 25%;
+  --earth-yellow: 45 90% 55%;
 }
 
 .dark {
@@ -65,110 +83,25 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  
-  code, pre {
-    font-family: 'Fira Code', monospace;
   }
 }
 
-@layer utilities {
-  /* Text colors */
-  .text-earth-teal {
-    color: var(--earth-teal);
-  }
-
-  .text-earth-orange {
-    color: var(--earth-orange);
-  }
-
-  .text-earth-rust {
-    color: var(--earth-rust);
-  }
-
-  .text-earth-cream {
-    color: var(--earth-cream);
-  }
-
-  .text-earth-brown {
-    color: var(--earth-brown);
-  }
-
-  .text-earth-yellow {
-    color: var(--earth-yellow);
-  }
-
-  /* Background colors */
-  .bg-earth-teal {
-    background-color: var(--earth-teal);
-  }
-
-  .bg-earth-orange {
-    background-color: var(--earth-orange);
-  }
-
-  .bg-earth-rust {
-    background-color: var(--earth-rust);
-  }
-
-  .bg-earth-cream {
-    background-color: var(--earth-cream);
-  }
-
-  .bg-earth-brown {
-    background-color: var(--earth-brown);
-  }
-
-  .bg-earth-yellow {
-    background-color: var(--earth-yellow);
-  }
-
-  /* Border colors */
-  .border-earth-teal {
-    border-color: var(--earth-teal);
-  }
-
-  .border-earth-orange {
-    border-color: var(--earth-orange);
-  }
-
-  .border-earth-rust {
-    border-color: var(--earth-rust);
-  }
-
-  .border-earth-cream {
-    border-color: var(--earth-cream);
-  }
-
-  .border-earth-brown {
-    border-color: var(--earth-brown);
-  }
-
-  .border-earth-yellow {
-    border-color: var(--earth-yellow);
-  }
-}
-
-/* Smooth scrolling */
+/* Smooth in-page scrolling, but only for people who haven't asked for less
+   motion. scroll-padding keeps section headings clear of the fixed nav. */
 html {
-  scroll-behavior: smooth;
+  scroll-padding-top: 4rem;
 }
 
-/* Link styles */
-a {
-  color: var(--earth-teal);
-  text-decoration: none;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
-a:visited {
-  color: var(--earth-orange);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

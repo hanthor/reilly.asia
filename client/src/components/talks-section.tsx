@@ -103,13 +103,12 @@ export default function TalksSection() {
                             href={talk.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block group"
-                            aria-label={`${talk.title} — ${talk.type} at ${talk.event}, ${talk.date}`}
+                            className="block group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
-                            <Card className="h-full hover:shadow-lg transition-shadow bg-earth-teal dark:bg-earth-teal/30 border-earth-teal/50 dark:border-earth-cream/10 group-hover:border-earth-orange">
+                            <Card className="h-full hover:shadow-lg transition-shadow bg-earth-teal border-earth-teal/50 dark:border-earth-cream/10 group-hover:border-earth-orange">
                                 <CardContent className="p-6 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
-                                        <Badge variant="secondary" className="bg-earth-cream/20 text-earth-cream hover:bg-earth-cream/30 border-0">
+                                        <Badge variant="secondary" className="bg-black/20 text-earth-cream hover:bg-black/20 border-0">
                                             {talk.type}
                                         </Badge>
                                     </div>
@@ -118,17 +117,17 @@ export default function TalksSection() {
                                         {talk.title}
                                     </h3>
 
-                                    <div className="mt-auto space-y-2 text-sm text-earth-cream/80">
+                                    <div className="mt-auto space-y-2 text-sm text-earth-cream">
                                         <div className="flex items-center">
-                                            <Mic className="w-4 h-4 mr-2 text-earth-orange" />
+                                            <Mic className="w-4 h-4 mr-2 shrink-0 text-earth-orange" aria-hidden="true" />
                                             {talk.event}
                                         </div>
                                         <div className="flex items-center">
-                                            <Calendar className="w-4 h-4 mr-2 text-earth-orange" />
+                                            <Calendar className="w-4 h-4 mr-2 shrink-0 text-earth-orange" aria-hidden="true" />
                                             {talk.date}
                                         </div>
                                         <div className="flex items-center">
-                                            <MapPin className="w-4 h-4 mr-2 text-earth-orange" />
+                                            <MapPin className="w-4 h-4 mr-2 shrink-0 text-earth-orange" aria-hidden="true" />
                                             {talk.location}
                                         </div>
                                     </div>

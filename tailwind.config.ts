@@ -6,8 +6,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Roboto", "sans-serif"],
-        heading: ["Inter", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        heading: ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -44,6 +44,16 @@ export default {
         destructive: {
           DEFAULT: "var(--destructive)",
           foreground: "var(--destructive-foreground)",
+        },
+        // Earth palette. Channels live in index.css so light/dark can share
+        // them and opacity modifiers (bg-earth-teal/20) actually compile.
+        earth: {
+          teal: "hsl(var(--earth-teal) / <alpha-value>)",
+          orange: "hsl(var(--earth-orange) / <alpha-value>)",
+          rust: "hsl(var(--earth-rust) / <alpha-value>)",
+          cream: "hsl(var(--earth-cream) / <alpha-value>)",
+          brown: "hsl(var(--earth-brown) / <alpha-value>)",
+          yellow: "hsl(var(--earth-yellow) / <alpha-value>)",
         },
         border: "var(--border)",
         input: "var(--input)",

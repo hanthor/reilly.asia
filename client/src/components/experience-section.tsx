@@ -6,7 +6,7 @@ import { LinkedBadge } from "@/components/linked-badge";
 const tagLinks: Record<string, string> = {
   Matrix: "https://matrix.org",
   Moodle: "https://moodle.org",
-  SCCM: "https://www.microsoft.com/en-us/mem/configmgr",
+  SCCM: "https://learn.microsoft.com/en-us/intune/configmgr/",
   JAMF: "https://www.jamf.com",
 };
 
@@ -40,7 +40,7 @@ export default function ExperienceSection() {
       date: "September 2021 - Present",
       description: "Consulting on setup, maintenance, and architecting of primarily FOSS solutions. Currently managing a Moodle site for The Redwoods Group.",
       tags: ["Consulting", "FOSS", "Moodle", "Solution Architecture"],
-      url: "http://reilly.asia",
+      url: "#contact",
       logo: null, // No specific logo provided, will use Briefcase icon
       primaryColor: null,
       forceLightText: false,
@@ -53,7 +53,7 @@ export default function ExperienceSection() {
       tags: ["Matrix", "Support", "Technical Account Manager", "Solution Architecture"],
       url: "https://element.io/",
       logo: "/element_hq_logo.jpg",
-      primaryColor: "#319477",
+      primaryColor: "#1f6e59", // Element green, darkened for AA with cream text
       forceLightText: true,
     },
     {
@@ -84,31 +84,46 @@ export default function ExperienceSection() {
     <section id="experience" className="py-16 dark:bg-earth-brown">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-heading font-bold mb-4">Work Experience</h2>
+          <h2 className="text-4xl font-heading font-bold text-earth-brown dark:text-earth-cream mb-4">Work Experience</h2>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {workExperience.map((job, index) => (
+          {workExperience.map((job, index) => {
+            // Brand-coloured cards keep a fixed text colour in both themes;
+            // only the plain card follows light/dark.
+            const textClass = job.forceLightText
+              ? "text-earth-cream"
+              : job.primaryColor
+                ? "text-[#241d19]"
+                : "text-earth-brown dark:text-earth-cream";
+            const tagClass = job.forceLightText
+              ? "text-earth-cream border-earth-cream"
+              : job.primaryColor
+                ? "text-[#241d19] border-[#241d19]"
+                : "text-earth-brown border-earth-brown dark:text-earth-cream dark:border-earth-cream";
+            return (
             <Card
               key={index}
-              className={`hover:shadow-md transition-shadow ${job.primaryColor ? '' : 'bg-earth-cream dark:bg-earth-brown dark:border-earth-rust'}`}
+              className={`hover:shadow-md transition-shadow ${job.primaryColor ? 'border-transparent' : 'bg-earth-cream dark:bg-earth-brown dark:border-earth-rust'}`}
               style={job.primaryColor ? { backgroundColor: job.primaryColor } : {}}
             >
-              <CardContent className={`p-6 ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'}`} >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
+              <CardContent className={`p-6 ${textClass}`}>
+                <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 mb-4">
+                  <div className="flex items-center gap-3">
                     {job.logo ? (
-                      <img src={job.logo} alt={`${job.company} logo`} width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover" />
+                      <img src={job.logo} alt="" width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover shrink-0" />
                     ) : (
-                      <Briefcase className="w-5 h-5" />
+                      <Briefcase className="w-5 h-5 shrink-0" aria-hidden="true" />
                     )}
-                    <a href={job.url} target="_blank" rel="noopener noreferrer" className={`text-xl font-heading font-semibold transition-colors hover:underline ${job.forceLightText ? 'text-earth-cream' : (job.primaryColor ? 'text-earth-brown' : 'text-earth-brown dark:text-earth-cream')}`}>{job.company}</a>
+                    <h3 className="text-xl font-heading font-semibold">
+                      <a href={job.url} {...(job.url.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="hover:underline underline-offset-2">{job.company}</a>
+                    </h3>
                   </div>
-                  <Badge variant="secondary" className={`bg-earth-teal/90 ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'}`}>
+                  <Badge variant="secondary" className={`whitespace-nowrap bg-transparent hover:bg-transparent border border-current ${textClass}`}>
                     {job.date}
                   </Badge>
                 </div>
-                <h4 className={`text-lg font-semibold ${job.forceLightText ? 'text-earth-cream' : 'text-earth-brown dark:text-earth-cream'} mb-2`}>{job.title}</h4>
+                <p className="text-lg font-semibold mb-2">{job.title}</p>
                 <p className="mb-4">{job.description}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {job.tags.map((tag) => (
@@ -116,13 +131,14 @@ export default function ExperienceSection() {
                       key={tag}
                       tag={tag}
                       links={tagLinks}
-                      className={`text-xs ${job.forceLightText ? 'text-earth-cream border-earth-cream' : 'text-earth-brown border-earth-brown dark:text-earth-cream'}`}
+                      className={`text-xs ${tagClass}`}
                     />
                   ))}
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

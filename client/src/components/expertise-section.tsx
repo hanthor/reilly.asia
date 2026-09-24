@@ -8,10 +8,10 @@ export default function ExpertiseSection() {
       icon: Rocket,
       title: "Linux Infrastructure",
       description: <>
-        Mostly working with <a href="https://www.containers.bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">bootable containers</a> these days — <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">OCI images</a> you deploy as a full OS with atomic updates built in. If you're thinking about immutable infrastructure or want off the treadmill of traditional package management, this is worth looking at.
+        Mostly working with <a href="https://bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange underline underline-offset-2 hover:no-underline">bootable containers</a> these days — <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange underline underline-offset-2 hover:no-underline">OCI images</a> you deploy as a full OS with atomic updates built in. If you're thinking about immutable infrastructure or want off the treadmill of traditional package management, this is worth looking at.
       </>,
       tags: [
-        { name: "bootc", url: "https://www.containers.bootc.dev/" },
+        { name: "bootc", url: "https://bootc.dev/" },
         { name: "Fedora", url: "https://fedoraproject.org/" },
         { name: "CentOS", url: "https://www.centos.org/" },
         { name: "Containers", url: "https://www.docker.com/resources/what-container/" }
@@ -21,7 +21,7 @@ export default function ExpertiseSection() {
       icon: MessageSquare,
       title: "Matrix Services",
       description: <>
-        Ran support and technical account management at Element for clients including NATO and the USMC. I know how to deploy <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">Matrix</a>, set up bridges, and keep the whole thing running — from a homeserver to a large enterprise deployment.
+        Ran support and technical account management at Element for clients including NATO and the USMC. I know how to deploy <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange underline underline-offset-2 hover:no-underline">Matrix</a>, set up bridges, and keep the whole thing running — from a homeserver to a large enterprise deployment.
       </>,
       tags: [
         { name: "Matrix", url: "https://matrix.org/" },
@@ -64,19 +64,19 @@ export default function ExpertiseSection() {
           {expertiseAreas.map((area, index) => (
             <Card key={index} className="hover:shadow-md transition-shadow bg-earth-cream dark:bg-earth-brown dark:border-earth-rust">
               <CardContent className="p-8">
-                <area.icon className="w-8 h-8 text-earth-rust dark:text-earth-orange mb-4" />
+                <area.icon className="w-8 h-8 text-earth-rust dark:text-earth-orange mb-4" aria-hidden="true" />
                 <h3 className="text-xl font-heading font-semibold text-earth-brown dark:text-earth-cream mb-4">{area.title}</h3>
                 <p className="text-earth-brown dark:text-earth-cream mb-4">{area.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {area.tags.map((tag, tagIndex) => (
                     tag.url ? (
-                      <a key={tagIndex} href={tag.url} target="_blank" rel="noopener noreferrer">
-                        <Badge variant="secondary" className="bg-earth-teal/20 text-earth-rust dark:text-earth-cream hover:bg-earth-teal/30 cursor-pointer">
+                      <a key={tagIndex} href={tag.url} target="_blank" rel="noopener noreferrer" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <Badge variant="secondary" className="bg-earth-teal/15 text-earth-brown dark:bg-earth-teal/40 dark:text-earth-cream hover:bg-earth-teal/25 cursor-pointer">
                           {tag.name}
                         </Badge>
                       </a>
                     ) : (
-                      <Badge key={tagIndex} variant="secondary" className="bg-earth-teal/20 text-earth-rust dark:text-earth-cream">
+                      <Badge key={tagIndex} variant="secondary" className="bg-earth-teal/15 text-earth-brown dark:bg-earth-teal/40 dark:text-earth-cream hover:bg-earth-teal/15">
                         {tag.name}
                       </Badge>
                     )

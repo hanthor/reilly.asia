@@ -1,8 +1,8 @@
-import { socialLinksWithWebsite } from "@/lib/social-links";
+import { socialLinks } from "@/lib/social-links";
 
 export default function Footer() {
   return (
-    <footer className="bg-earth-brown dark:bg-black text-earth-cream py-12">
+    <footer className="bg-earth-brown dark:bg-[hsl(20_14%_8%)] text-earth-cream py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
@@ -13,16 +13,16 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center space-x-6">
-            {socialLinksWithWebsite.map(({ icon: Icon, href, label }) => (
+            {socialLinks.map(({ icon: Icon, href, label }) => (
               <a
                 key={label}
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-earth-teal dark:hover:text-earth-teal transition-colors"
+                className="rounded-sm text-earth-cream hover:text-earth-orange transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-earth-orange"
                 aria-label={label}
               >
-                <Icon size={20} />
+                <Icon size={20} aria-hidden="true" />
               </a>
             ))}
           </div>
@@ -31,8 +31,7 @@ export default function Footer() {
         <div className="border-t border-earth-rust dark:border-earth-rust mt-8 pt-8 text-center text-sm text-earth-cream dark:text-earth-cream">
           <p className="font-bold">James Reilly Consulting LLC</p>
           <p>Ohio, USA</p>
-          <p>https://reilly.asia</p>
-          <p className="mt-2 text-earth-cream/60">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
+                    <p className="mt-2 text-earth-cream/85">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
         </div>
       </div>
     </footer>

@@ -2,8 +2,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 export default function NotFound() {
+  useEffect(() => {
+    document.title = "Page not found — James Reilly";
+    const robots = document.createElement("meta");
+    robots.name = "robots";
+    robots.content = "noindex";
+    document.head.appendChild(robots);
+    return () => robots.remove();
+  }, []);
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-earth-cream dark:bg-earth-brown">
       <Card className="w-full max-w-md mx-4 bg-earth-cream dark:bg-earth-brown dark:border-earth-rust">

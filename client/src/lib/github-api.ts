@@ -1,70 +1,11 @@
-import { GitHubUser, GitHubRepo } from "@/types/github";
+import type { RepoStats } from "@shared/featured-repos";
 
-const GITHUB_USERNAME = "hanthor";
+declare const __GITHUB_STATS__: RepoStats;
 
-export async function fetchGitHubUser(): Promise<GitHubUser | null> {
-  try {
-    // In development, use proxy. In production, call GitHub API directly
-    const apiUrl = import.meta.env.DEV
-      ? `/api/github/user/${GITHUB_USERNAME}`
-      : `https://api.github.com/users/${GITHUB_USERNAME}`;
+// Baked in at build time by vite.config.ts. Empty if GitHub was unreachable
+// during the build — callers should then show no counts rather than zeros.
+const stats: RepoStats = typeof __GITHUB_STATS__ === "undefined" ? {} : __GITHUB_STATS__;
 
-    const response = await fetch(apiUrl);
-    if (!response.ok) {
-      throw new Error("Failed to fetch GitHub user");
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching GitHub user:", error);
-    return null;
-  }
-}
-
-export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
-  try {
-    // Repositories to fetch specifically
-    const externalRepos = [
-      "ublue-os/bluefin-lts",
-      "projectbluefin/bootc-installer",
-      "projectbluefin/dakota",
-      "tuna-os/tunaos",
-      "almalinux/bootc-images",
-      "projectbluefin/knuckle",
-    ];
-
-    // Fetch user repos
-    const userReposUrl = import.meta.env.DEV
-      ? `/api/github/user/${GITHUB_USERNAME}/repos`
-      : `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=50`;
-
-    const userResponse = await fetch(userReposUrl);
-    let allRepos: GitHubRepo[] = [];
-
-    if (userResponse.ok) {
-      allRepos = await userResponse.json();
-    }
-
-    // Fetch external repos
-    const externalRepoPromises = externalRepos.map(async (repoName) => {
-      const url = import.meta.env.DEV
-        ? `/api/github/repos/${repoName}`
-        : `https://api.github.com/repos/${repoName}`;
-
-      const res = await fetch(url);
-      if (res.ok) {
-        return await res.json();
-      }
-      return null;
-    });
-
-    const fetchedExternalRepos = (await Promise.all(externalRepoPromises)).filter(r => r !== null);
-
-    // Combine arrays
-    allRepos = [...allRepos, ...fetchedExternalRepos];
-
-    return allRepos;
-  } catch (error) {
-    console.error("Error fetching GitHub repositories:", error);
-    return [];
-  }
+export function getRepoStats(repoId: string): { stars: number; forks: number } | undefined {
+  return stats[repoId.toLowerCase()];
 }

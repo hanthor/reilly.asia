@@ -1,14 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Star, GitFork, ExternalLink, Github } from "lucide-react";
-import { fetchGitHubUser, fetchGitHubRepos } from "@/lib/github-api";
+import { getRepoStats } from "@/lib/github-api";
 import { LinkedBadge } from "@/components/linked-badge";
 
 const tagLinks: Record<string, string> = {
-  bootc: "https://bootc.io/",
+  bootc: "https://bootc.dev/",
   Fedora: "https://fedoraproject.org/",
   AlmaLinux: "https://almalinux.org/",
   CentOS: "https://www.centos.org/",
@@ -26,16 +23,6 @@ interface FeaturedProject {
 }
 
 export default function ProjectsSection() {
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ["/api/github/user"],
-    queryFn: fetchGitHubUser,
-  });
-
-  const { data: repos = [], isLoading: reposLoading } = useQuery({
-    queryKey: ["/api/github/repos"],
-    queryFn: fetchGitHubRepos,
-  });
-
   const featuredProjects: FeaturedProject[] = [
     {
       name: "bluefin-lts",
@@ -71,7 +58,7 @@ export default function ProjectsSection() {
       language: "Shell",
       tags: ["bootc", "AlmaLinux", "Fedora", "Immutable"],
       url: "https://github.com/tuna-os/tunaos",
-      logo: "https://avatars.githubusercontent.com/u/223733964?s=200&v=4",
+      logo: "/tunaos.webp",
       website: "https://tunaos.org"
     },
     {
@@ -94,24 +81,16 @@ export default function ProjectsSection() {
     }
   ];
 
+  // Tinted background per language, but text stays brown/cream so every
+  // pill meets contrast in both themes.
   const getLanguageColor = (language: string) => {
-    const colors: Record<string, string> = {
-      Go: "bg-earth-teal/20 text-earth-teal",
-      Shell: "bg-earth-orange/20 text-earth-orange",
-      Kotlin: "bg-earth-rust/20 text-earth-rust",
-      TypeScript: "bg-earth-teal/20 text-earth-teal",
-      JavaScript: "bg-earth-yellow/20 text-earth-yellow",
-      Python: "bg-earth-teal/20 text-earth-teal",
-      Makefile: "bg-earth-brown/20 text-earth-brown dark:text-earth-cream",
+    const tints: Record<string, string> = {
+      Go: "bg-earth-teal/20",
+      Shell: "bg-earth-orange/30",
+      Python: "bg-earth-teal/20",
+      Makefile: "bg-earth-brown/15 dark:bg-earth-cream/15",
     };
-    return colors[language] || "bg-gray-100 text-gray-700";
-  };
-
-  const getRepoStats = (project: FeaturedProject) => {
-    const repo = repos.find(r =>
-      project.repoId ? r.full_name.toLowerCase() === project.repoId.toLowerCase() : r.name.toLowerCase() === project.name.toLowerCase()
-    );
-    return repo ? { stars: repo.stargazers_count, forks: repo.forks_count } : { stars: 0, forks: 0 };
+    return `${tints[language] ?? "bg-earth-brown/10"} text-earth-brown dark:text-earth-cream border-0 hover:bg-inherit`;
   };
 
   return (
@@ -126,7 +105,7 @@ export default function ProjectsSection() {
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {featuredProjects.map((project, index) => {
-            const stats = getRepoStats(project);
+            const stats = project.repoId ? getRepoStats(project.repoId) : undefined;
 
             return (
               <Card key={index} className="hover:shadow-md transition-shadow bg-earth-cream dark:bg-earth-brown dark:border-earth-rust h-full flex flex-col">
@@ -134,7 +113,7 @@ export default function ProjectsSection() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       {project.logo ? (
-                        <img src={project.logo} alt={`${project.name} logo`} width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover" />
+                        <img src={project.logo} alt="" width={32} height={32} loading="lazy" className="w-8 h-8 rounded-full object-cover shrink-0" />
                       ) : (
                         <Github className="w-5 h-5 text-earth-brown dark:text-earth-cream" />
                       )}
@@ -153,31 +132,26 @@ export default function ProjectsSection() {
                         key={tag}
                         tag={tag}
                         links={tagLinks}
-                        className="text-xs border-earth-rust text-earth-rust"
+                        className="text-xs border-earth-rust text-earth-rust dark:border-earth-orange dark:text-earth-orange"
                       />
                     ))}
                   </div>
 
                   <div className="flex items-center justify-between mt-auto">
                     <div className="flex items-center space-x-4 text-sm text-earth-brown dark:text-earth-cream">
-                      {stats ? (
+                      {stats && (
                         <>
-                          <span className="flex items-center">
-                            <Star className="w-4 h-4 mr-1" />
+                          <span className="flex items-center" title="GitHub stars">
+                            <Star className="w-4 h-4 mr-1" aria-hidden="true" />
                             {stats.stars}
+                            <span className="sr-only"> stars</span>
                           </span>
-                          <span className="flex items-center">
-                            <GitFork className="w-4 h-4 mr-1" />
+                          <span className="flex items-center" title="Forks">
+                            <GitFork className="w-4 h-4 mr-1" aria-hidden="true" />
                             {stats.forks}
+                            <span className="sr-only"> forks</span>
                           </span>
                         </>
-                      ) : (
-                        reposLoading && (
-                          <div className="flex space-x-4">
-                            <Skeleton className="h-4 w-12" />
-                            <Skeleton className="h-4 w-12" />
-                          </div>
-                        )
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
@@ -186,20 +160,20 @@ export default function ProjectsSection() {
                           href={project.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-earth-teal hover:text-earth-orange transition-colors"
+                          className="rounded-sm text-earth-teal dark:text-earth-cream hover:text-earth-rust dark:hover:text-earth-orange transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`Visit ${project.name} website`}
                         >
-                          <ExternalLink className="w-5 h-5" />
+                          <ExternalLink className="w-5 h-5" aria-hidden="true" />
                         </a>
                       )}
                       <a
                         href={project.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-earth-teal hover:text-earth-orange transition-colors"
+                        className="rounded-sm text-earth-teal dark:text-earth-cream hover:text-earth-rust dark:hover:text-earth-orange transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`View ${project.name} on GitHub`}
                       >
-                        <Github className="w-5 h-5" />
+                        <Github className="w-5 h-5" aria-hidden="true" />
                       </a>
                     </div>
                   </div>

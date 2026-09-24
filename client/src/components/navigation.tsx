@@ -63,6 +63,12 @@ export default function Navigation() {
               </button>
             ))}
             <a
+              href="/infra/"
+              className="text-earth-brown dark:text-earth-cream hover:text-earth-teal dark:hover:text-earth-teal transition-colors font-medium"
+            >
+              Infra
+            </a>
+            <a
               href="https://tunaos.org"
               target="_blank"
               rel="noopener noreferrer"
@@ -108,6 +114,12 @@ export default function Navigation() {
                     {link.label}
                   </button>
                 ))}
+                <a
+                  href="/infra/"
+                  className="text-left text-earth-brown dark:text-earth-cream hover:text-earth-teal dark:hover:text-earth-teal transition-colors font-medium"
+                >
+                  Infra
+                </a>
                 <a
                   href="https://tunaos.org"
                   target="_blank"

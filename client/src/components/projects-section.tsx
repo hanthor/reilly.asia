@@ -8,7 +8,7 @@ import { fetchGitHubUser, fetchGitHubRepos } from "@/lib/github-api";
 import { LinkedBadge } from "@/components/linked-badge";
 
 const tagLinks: Record<string, string> = {
-  bootc: "https://bootc.io/",
+  bootc: "https://bootc.dev/",
   Fedora: "https://fedoraproject.org/",
   AlmaLinux: "https://almalinux.org/",
   CentOS: "https://www.centos.org/",

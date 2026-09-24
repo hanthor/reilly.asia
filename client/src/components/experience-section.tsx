@@ -6,7 +6,7 @@ import { LinkedBadge } from "@/components/linked-badge";
 const tagLinks: Record<string, string> = {
   Matrix: "https://matrix.org",
   Moodle: "https://moodle.org",
-  SCCM: "https://www.microsoft.com/en-us/mem/configmgr",
+  SCCM: "https://learn.microsoft.com/en-us/intune/configmgr/",
   JAMF: "https://www.jamf.com",
 };
 

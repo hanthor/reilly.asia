@@ -36,9 +36,9 @@ export default function HeroSection() {
               built with OCI and deployed via bootc. I am the creator and lead developer of{" "}
               <a href="https://tunaos.org" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
                 TunaOS
-              </a>, a cloud-native desktop system. Read my latest write-up:{" "}
-              <a href="https://tunaos.org/blog/13-fishes-in-the-sea" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
-                13 Fishes in the Sea: The TunaOS Variant Landscape
+              </a>, a cloud-native desktop system — see{" "}
+              <a href="https://tunaos.org/variants" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-earth-orange transition-colors text-white">
+                the TunaOS variant landscape
               </a>. Looking for help with infrastructure, automation, or training? <strong className="text-earth-cream dark:text-earth-cream">I'm available for consulting</strong> — get in touch below.
             </p>
 

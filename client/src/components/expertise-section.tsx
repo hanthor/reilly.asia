@@ -8,10 +8,10 @@ export default function ExpertiseSection() {
       icon: Rocket,
       title: "Linux Infrastructure",
       description: <>
-        Mostly working with <a href="https://www.containers.bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">bootable containers</a> these days — <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">OCI images</a> you deploy as a full OS with atomic updates built in. If you're thinking about immutable infrastructure or want off the treadmill of traditional package management, this is worth looking at.
+        Mostly working with <a href="https://bootc.dev/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">bootable containers</a> these days — <a href="https://opencontainers.org/" target="_blank" rel="noopener noreferrer" className="text-earth-rust dark:text-earth-orange hover:underline">OCI images</a> you deploy as a full OS with atomic updates built in. If you're thinking about immutable infrastructure or want off the treadmill of traditional package management, this is worth looking at.
       </>,
       tags: [
-        { name: "bootc", url: "https://www.containers.bootc.dev/" },
+        { name: "bootc", url: "https://bootc.dev/" },
         { name: "Fedora", url: "https://fedoraproject.org/" },
         { name: "CentOS", url: "https://www.centos.org/" },
         { name: "Containers", url: "https://www.docker.com/resources/what-container/" }

@@ -111,8 +111,9 @@ export function InfraHero() {
             Infrastructure that <span className="text-[color:var(--ix-teal)]">maintains itself</span>.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[color:var(--ix-muted)] sm:text-xl">
-            Laptops, a phone, a Raspberry Pi and a Kubernetes cluster on AWS, all declared in one public repo. Every
-            machine re-applies it daily. Bots ship the routine changes, and only real decisions reach a human.
+            My laptops, phone and Raspberry Pi, plus the Kubernetes cluster I run for TunaOS on AWS, all declared in
+            one public repo. Every machine re-applies it daily. Bots ship the routine changes, and only real decisions
+            reach a human.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a

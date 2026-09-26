@@ -2,6 +2,8 @@
 // names/groups, host READMEs, docs/src/automation.md). Architecture only:
 // no addresses, ports, instance IDs or allowlists belong in this file.
 
+import { FACT_HOSTS, type FactHost } from "@shared/fleet";
+
 export const HANDBOOK = "/infra/handbook/";
 export const REPO_URL = "https://github.com/hanthor/dotfiles";
 
@@ -9,8 +11,16 @@ export const handbook = (page: string) => HANDBOOK + page;
 
 export type HostState = "active" | "offline" | "retired";
 
-export interface Host {
-  name: string;
+/** Where a host sits in the architecture diagram's host grid. */
+export interface DiagramNode {
+  /** Caption under the node name, e.g. "Pi 5 · control node". */
+  sub: string;
+  /** Position in the grid, filled two per row, top-left first. */
+  order: number;
+}
+
+export interface Host<N extends string = string> {
+  name: N;
   kind: string;
   role: string;
   tags: string[];
@@ -20,18 +30,23 @@ export interface Host {
   slug?: string;
   /** Static hardware/OS facts for machines that do not publish their own. */
   specs?: [string, string][];
+  /** Present when this host is also drawn in the architecture diagram. */
+  diagram?: DiagramNode;
 }
 
 export const hostAnchor = (h: Pick<Host, "name" | "slug">) => `host-${h.slug ?? h.name}`;
 
-export interface HostGroup {
+export interface HostGroup<N extends string = string> {
   id: string;
   title: string;
   blurb: string;
-  hosts: Host[];
+  hosts: Host<N>[];
 }
 
-export const FLEET: HostGroup[] = [
+// Names are typed FactHost, so a host renamed here and not in shared/fleet.ts
+// (or the reverse) fails `tsc` instead of silently dropping the machine's live
+// device facts. FACT_HOSTS is the roster; this is its presentation.
+export const FLEET: HostGroup<FactHost>[] = [
   {
     id: "workstations",
     title: "Workstations",
@@ -44,6 +59,7 @@ export const FLEET: HostGroup[] = [
         tags: ["x86_64", "Bluefin"],
         state: "active",
         href: handbook("desktop/himachal/index.html"),
+        diagram: { sub: "laptop", order: 0 },
       },
       {
         name: "kanpur",
@@ -52,6 +68,7 @@ export const FLEET: HostGroup[] = [
         tags: ["x86_64", "Bluefin"],
         state: "active",
         href: handbook("desktop/kanpur/index.html"),
+        diagram: { sub: "laptop", order: 1 },
       },
       {
         name: "dilli",
@@ -60,6 +77,7 @@ export const FLEET: HostGroup[] = [
         tags: ["x86_64", "Bluefin"],
         state: "active",
         href: handbook("desktop/dilli/index.html"),
+        diagram: { sub: "desktop", order: 2 },
       },
       {
         name: "kerala",
@@ -68,6 +86,7 @@ export const FLEET: HostGroup[] = [
         tags: ["aarch64", "postmarketOS"],
         state: "active",
         href: handbook("desktop/kerala/index.html"),
+        diagram: { sub: "postmarketOS", order: 3 },
       },
       {
         name: "mumbai",
@@ -75,6 +94,7 @@ export const FLEET: HostGroup[] = [
         role: "Debian VM on the phone (Android Virtualization Framework), kept to a CLI-only profile.",
         tags: ["aarch64", "Debian", "cli-only"],
         state: "active",
+        diagram: { sub: "phone VM", order: 4 },
       },
     ],
   },
@@ -90,6 +110,7 @@ export const FLEET: HostGroup[] = [
         tags: ["aarch64", "Debian 13"],
         state: "active",
         href: handbook("servers/goa/index.html"),
+        diagram: { sub: "Pi 5 · control node", order: 6 },
       },
       {
         name: "punjab",
@@ -98,6 +119,7 @@ export const FLEET: HostGroup[] = [
         tags: ["x86_64", "Ubuntu 24.04"],
         state: "active",
         href: handbook("servers/punjab/index.html"),
+        diagram: { sub: "AWS agent box", order: 7 },
       },
       {
         name: "termux",
@@ -105,6 +127,7 @@ export const FLEET: HostGroup[] = [
         role: "The phone's Termux layer. No root and no systemd, so it has its own package role.",
         tags: ["aarch64", "Termux"],
         state: "active",
+        diagram: { sub: "android", order: 5 },
       },
     ],
   },
@@ -192,6 +215,35 @@ export const CLUSTER_NODES: HostGroup[] = [
 
 export const RETIRED_NOTE =
   "matrix and telengana, two Hetzner VPSes, were retired in 2026 once the AWS cluster took over their workloads.";
+
+/** A host as the architecture diagram draws it: name, caption, grid position. */
+export interface DiagramHost {
+  name: FactHost;
+  sub: string;
+}
+
+/**
+ * The diagram's host grid, derived from FLEET rather than restated. Every
+ * FACT_HOSTS machine must carry a `diagram` block, so adding a machine to the
+ * roster without placing it in the diagram fails the roster test instead of
+ * leaving the drawing quietly one node short.
+ */
+export const DIAGRAM_HOSTS: DiagramHost[] = FLEET.flatMap((g) => g.hosts)
+  .filter((h): h is Host<FactHost> & { diagram: DiagramNode } => h.diagram !== undefined)
+  .sort((a, b) => a.diagram.order - b.diagram.order)
+  .map((h) => ({ name: h.name, sub: h.diagram.sub }));
+
+/** FACT_HOSTS machines with no card in FLEET: their live facts would never render. */
+export function hostsMissingCards(): string[] {
+  const carded = new Set(FLEET.flatMap((g) => g.hosts).map((h) => h.name));
+  return FACT_HOSTS.filter((h) => !carded.has(h));
+}
+
+/** FLEET machines that publish facts but are absent from the diagram grid. */
+export function hostsMissingDiagramNodes(): string[] {
+  const drawn = new Set(DIAGRAM_HOSTS.map((h) => h.name));
+  return FACT_HOSTS.filter((h) => !drawn.has(h));
+}
 
 export interface Mechanism {
   title: string;

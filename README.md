@@ -1,4 +1,9 @@
 
+## Documentation
+
+- [Architecture](docs/architecture.md) — project structure, data flow, design decisions
+- [Contributing](CONTRIBUTING.md) — guidelines for contributing (coming soon)
+
 ## Local Development
 
 ```bash

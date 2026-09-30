@@ -14,6 +14,7 @@
 
 import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
 import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
+import { HANDBOOK_CONTENT_SECURITY_POLICY, withSecurityHeaders } from "./security-headers";
 
 interface Env extends ApiEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -47,6 +48,7 @@ async function proxyHandbook(request: Request, upstream: string): Promise<Respon
     if (rewritten) headers.set("Location", rewritten);
   }
   headers.set("Cache-Control", "public, max-age=300");
+  headers.set("Content-Security-Policy", HANDBOOK_CONTENT_SECURITY_POLICY);
   headers.delete("Set-Cookie");
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
@@ -98,39 +100,43 @@ async function landing(request: Request, env: Env): Promise<Response> {
   return new Response(res.body, { status: res.status, headers });
 }
 
+async function routeRequest(request: Request, env: Env, ctx: Ctx): Promise<Response> {
+  const url = new URL(request.url);
+  const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
+  if (canonical) return Response.redirect(canonical, 301);
+  const route = classifyInfraPath(url.pathname, url.search);
+  if (route.kind === "pass") return env.ASSETS.fetch(request);
+  if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();
+
+  switch (route.kind) {
+    case "redirect":
+      return Response.redirect(url.origin + route.location, 301);
+    case "landing":
+      return landing(request, env);
+    case "handbook":
+      return proxyHandbook(request, route.upstream);
+    case "api-status":
+      return cachedJson(request, ctx, async () => ({ body: await buildStatus(env), ttl: STATUS_TTL }));
+    case "api-activity":
+      return cachedJson(request, ctx, async () => {
+        const body = await buildActivity(env);
+        return { body, ttl: activityIsEmpty(body) ? ACTIVITY_EMPTY_TTL : ACTIVITY_TTL };
+      });
+    case "api-fleet":
+      return cachedJson(request, ctx, async () => {
+        const body = await buildFleet();
+        return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
+      });
+    case "api-not-found":
+      return new Response(JSON.stringify({ error: "not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      });
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
-    const url = new URL(request.url);
-    const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
-    if (canonical) return Response.redirect(canonical, 301);
-    const route = classifyInfraPath(url.pathname, url.search);
-    if (route.kind === "pass") return env.ASSETS.fetch(request);
-    if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();
-
-    switch (route.kind) {
-      case "redirect":
-        return Response.redirect(url.origin + route.location, 301);
-      case "landing":
-        return landing(request, env);
-      case "handbook":
-        return proxyHandbook(request, route.upstream);
-      case "api-status":
-        return cachedJson(request, ctx, async () => ({ body: await buildStatus(env), ttl: STATUS_TTL }));
-      case "api-activity":
-        return cachedJson(request, ctx, async () => {
-          const body = await buildActivity(env);
-          return { body, ttl: activityIsEmpty(body) ? ACTIVITY_EMPTY_TTL : ACTIVITY_TTL };
-        });
-      case "api-fleet":
-        return cachedJson(request, ctx, async () => {
-          const body = await buildFleet();
-          return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
-        });
-      case "api-not-found":
-        return new Response(JSON.stringify({ error: "not found" }), {
-          status: 404,
-          headers: { "Content-Type": "application/json; charset=utf-8" },
-        });
-    }
+    return withSecurityHeaders(await routeRequest(request, env, ctx));
   },
 };

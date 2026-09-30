@@ -33,17 +33,8 @@
     <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/profile.webp" as="image" type="image/webp" fetchpriority="high">
 
-    <!-- Apply the saved/system theme before first paint (no light flash in dark mode) -->
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("portfolio-theme") || "system";
-          if (t === "system") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-          document.documentElement.classList.add(t);
-          document.documentElement.style.colorScheme = t;
-        } catch (e) {}
-      })();
-    </script>
+    <!-- Apply the saved/system theme before first paint (no light flash in dark mode). -->
+    <script src="/theme.js"></script>
 
     <script type="application/ld+json">
       {

@@ -6,7 +6,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/github/user/:username", async (req, res) => {
     try {
       const { username } = req.params;
-      const response = await fetch(`https://api.github.com/users/${username}`);
+      const response = await fetch(`https://api.github.com/users/${username}`, {
+        signal: AbortSignal.timeout(10000),
+      });
       if (!response.ok) {
         throw new Error(`GitHub API error: ${response.statusText}`);
       }
@@ -23,7 +25,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/github/user/:username/repos", async (req, res) => {
     try {
       const { username } = req.params;
-      const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=50`);
+      const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=50`, {
+        signal: AbortSignal.timeout(10000),
+      });
       if (!response.ok) {
         throw new Error(`GitHub API error: ${response.statusText}`);
       }

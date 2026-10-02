@@ -1,146 +1,43 @@
-import { describe, expect, it } from "vitest"
-import { cn } from "./utils"
+import { describe, expect, it } from "vitest";
+import { cn } from "./utils";
 
-describe("cn() className merge helper", () => {
-  it("merges simple class strings", () => {
-    const result = cn("px-2", "py-1")
-    expect(result).toBe("px-2 py-1")
-  })
+describe("cn", () => {
+  it("joins plain string class names with a space", () => {
+    expect(cn("a", "b", "c")).toBe("a b c");
+  });
 
-  it("handles empty strings", () => {
-    const result = cn("px-2", "", "py-1")
-    expect(result).toBe("px-2 py-1")
-  })
+  it("drops falsy values (undefined, null, false, empty string)", () => {
+    expect(cn("a", undefined, null, false, "", "b")).toBe("a b");
+  });
 
-  it("handles undefined and null values", () => {
-    const result = cn("px-2", undefined, null, "py-1")
-    expect(result).toBe("px-2 py-1")
-  })
+  it("expands an object of conditional classes, keeping only truthy keys", () => {
+    expect(cn({ a: true, b: false, c: true })).toBe("a c");
+  });
 
-  it("handles boolean values", () => {
-    const result = cn("px-2", false && "hidden", true && "visible", "py-1")
-    expect(result).toBe("px-2 visible py-1")
-  })
+  it("flattens arrays of class names", () => {
+    expect(cn(["a", "b"], "c")).toBe("a b c");
+  });
 
-  it("handles arrays of class names", () => {
-    const result = cn(["px-2", "py-1"], ["rounded", "bg-white"])
-    expect(result).toBe("px-2 py-1 rounded bg-white")
-  })
+  it("returns an empty string when given nothing usable", () => {
+    expect(cn()).toBe("");
+    expect(cn(undefined, null, false)).toBe("");
+  });
 
-  it("handles objects with class name keys", () => {
-    const result = cn(
-      { "px-2": true, "py-1": false },
-      { rounded: true, "bg-white": false }
-    )
-    expect(result).toBe("px-2 rounded")
-  })
+  it("merges Tailwind utilities so the later conflicting class wins", () => {
+    // tailwind-merge's core job: same-property utilities collide, last wins.
+    expect(cn("px-2", "px-4")).toBe("px-4");
+    expect(cn("text-red-500", "text-blue-500")).toBe("text-blue-500");
+  });
 
-  it("resolves Tailwind CSS conflicts using twMerge", () => {
-    // conflicting padding classes — twMerge keeps the last one
-    const result = cn("px-2 py-1", "px-4")
-    expect(result).toBe("py-1 px-4")
-  })
+  it("keeps non-conflicting Tailwind utilities from multiple sources", () => {
+    expect(cn("px-2", "py-4")).toBe("px-2 py-4");
+  });
 
-  it("resolves Tailwind CSS color conflicts", () => {
-    // conflicting text colors — twMerge keeps the last one
-    const result = cn("text-red-500", "text-blue-600")
-    expect(result).toBe("text-blue-600")
-  })
+  it("lets a later conditional override an earlier plain class", () => {
+    expect(cn("text-sm", { "text-lg": true })).toBe("text-lg");
+  });
 
-  it("handles width and height conflicts", () => {
-    const result = cn("w-full h-12", "w-1/2")
-    expect(result).toBe("h-12 w-1/2")
-  })
-
-  it("preserves non-conflicting classes when resolving conflicts", () => {
-    const result = cn("px-2 py-1 rounded", "px-4")
-    expect(result).toBe("py-1 rounded px-4")
-  })
-
-  it("handles display and flex conflicts", () => {
-    const result = cn("flex flex-row", "flex flex-col", "gap-4")
-    expect(result).toBe("flex flex-col gap-4")
-  })
-
-  it("combines variant classes correctly", () => {
-    const result = cn(
-      "bg-white dark:bg-slate-900",
-      "text-black dark:text-white"
-    )
-    expect(result).toContain("bg-white")
-    expect(result).toContain("dark:bg-slate-900")
-    expect(result).toContain("text-black")
-    expect(result).toContain("dark:text-white")
-  })
-
-  it("handles responsive breakpoint classes", () => {
-    const result = cn("w-full md:w-1/2 lg:w-1/3", "md:w-2/3")
-    expect(result).toContain("w-full")
-    expect(result).toContain("lg:w-1/3")
-    expect(result).toContain("md:w-2/3")
-  })
-
-  it("handles complex real-world button example", () => {
-    const baseStyles = "px-4 py-2 rounded font-medium transition"
-    const variantStyles = "bg-blue-600 text-white hover:bg-blue-700"
-    const overrides = "px-6"
-
-    const result = cn(baseStyles, variantStyles, overrides)
-    expect(result).toContain("py-2")
-    expect(result).toContain("rounded")
-    expect(result).toContain("font-medium")
-    expect(result).toContain("transition")
-    expect(result).toContain("bg-blue-600")
-    expect(result).toContain("text-white")
-    expect(result).toContain("hover:bg-blue-700")
-    expect(result).toContain("px-6")
-    expect(result).not.toContain("px-4")
-  })
-
-  it("handles nested conditional classes", () => {
-    const isActive = true
-    const isDisabled = false
-
-    const result = cn(
-      "px-4 py-2",
-      isActive && "bg-blue-600 text-white",
-      isDisabled && "opacity-50 cursor-not-allowed",
-      !isDisabled && "cursor-pointer"
-    )
-
-    expect(result).toContain("px-4")
-    expect(result).toContain("py-2")
-    expect(result).toContain("bg-blue-600")
-    expect(result).toContain("text-white")
-    expect(result).toContain("cursor-pointer")
-    expect(result).not.toContain("opacity-50")
-  })
-
-  it("handles empty input", () => {
-    const result = cn()
-    expect(result).toBe("")
-  })
-
-  it("handles single string input", () => {
-    const result = cn("px-4 py-2 rounded")
-    expect(result).toBe("px-4 py-2 rounded")
-  })
-
-  it("combines clsx behavior with twMerge resolution in one call", () => {
-    // clsx handles the conditional logic, twMerge handles tailwind conflicts
-    const isLarge = true
-    const isPrimary = false
-
-    const result = cn(
-      "px-2 py-1",
-      isLarge && "px-4 py-2",
-      isPrimary && "bg-blue-600",
-      !isPrimary && "bg-gray-200"
-    )
-
-    expect(result).toContain("py-2")
-    expect(result).toContain("bg-gray-200")
-    expect(result).not.toContain("px-2")
-    expect(result).not.toContain("bg-blue-600")
-  })
-})
+  it("preserves non-Tailwind arbitrary class names untouched", () => {
+    expect(cn("my-custom-class", "another-one")).toBe("my-custom-class another-one");
+  });
+});

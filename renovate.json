@@ -28,7 +28,7 @@
         "tailwindcss",
         "tailwindcss-animate",
         "@tailwindcss/typography",
-        "@tailwindcss/vite"
+        "@tailwindcss/postcss"
       ]
     },
     {

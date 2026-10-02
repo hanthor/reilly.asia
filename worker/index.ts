@@ -1,15 +1,19 @@
-// Serves the static site. The Worker runs first only for /infra/* (see
-// wrangler.jsonc):
+// Serves the static site. The Worker runs first for every request (see
+// wrangler.jsonc) so it can send http:// and www. to https://reilly.asia;
+// everything outside /infra then goes straight to the static assets.
+// Under /infra:
 //   /infra/             → the SPA's infrastructure landing page
 //   /infra/handbook/*   → proxied from the handbook's GitHub Pages build
 //                         (hanthor/dotfiles → hanthor.github.io/dotfiles), so it
 //                         is always as fresh as the book with no site rebuild
 //   /infra/api/status   → live public-endpoint health, cached 60s
 //   /infra/api/activity → repo automation counts from GitHub, cached 1h
+//   /infra/api/fleet    → per-machine device facts from the fleet-facts branch,
+//                         sanitized, cached 10 min
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
 
-import { buildActivity, buildStatus, activityIsEmpty, type ApiEnv } from "./api";
-import { classifyInfraPath, rewriteHandbookLocation } from "./routes";
+import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
+import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -22,6 +26,8 @@ interface Ctx {
 const STATUS_TTL = 60;
 const ACTIVITY_TTL = 3600;
 const ACTIVITY_EMPTY_TTL = 300;
+const FLEET_TTL = 600;
+const FLEET_EMPTY_TTL = 60;
 
 function methodNotAllowed(): Response {
   return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
@@ -95,6 +101,8 @@ async function landing(request: Request, env: Env): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env, ctx: Ctx): Promise<Response> {
     const url = new URL(request.url);
+    const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
+    if (canonical) return Response.redirect(canonical, 301);
     const route = classifyInfraPath(url.pathname, url.search);
     if (route.kind === "pass") return env.ASSETS.fetch(request);
     if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();
@@ -112,6 +120,11 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildActivity(env);
           return { body, ttl: activityIsEmpty(body) ? ACTIVITY_EMPTY_TTL : ACTIVITY_TTL };
+        });
+      case "api-fleet":
+        return cachedJson(request, ctx, async () => {
+          const body = await buildFleet();
+          return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
         });
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {

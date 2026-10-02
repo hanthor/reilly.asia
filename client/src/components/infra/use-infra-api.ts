@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ActivityPayload, StatusPayload } from "@shared/infra";
+import type { FleetPayload } from "@shared/fleet";
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { headers: { Accept: "application/json" } });
@@ -26,6 +27,14 @@ export function useInfraActivity() {
     queryKey: ["/infra/api/activity"],
     queryFn: () => getJson<ActivityPayload>("/infra/api/activity"),
     staleTime: Infinity,
+  });
+}
+
+export function useFleetFacts() {
+  return useQuery({
+    queryKey: ["/infra/api/fleet"],
+    queryFn: () => getJson<FleetPayload>("/infra/api/fleet"),
+    staleTime: 5 * 60_000,
   });
 }
 

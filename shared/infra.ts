@@ -25,7 +25,7 @@ export interface PublicEndpoint {
 // Public, unauthenticated health endpoints. The Worker probes these; the page
 // uses the same list for its loading skeleton and "unknown" fallback.
 export const PUBLIC_ENDPOINTS: readonly PublicEndpoint[] = [
-  { name: "School Hive", label: "hive.tunaos.org", group: "hive", path: "/api/health" },
+  { name: "School Hive", label: "school.tunaos.org", group: "hive", path: "/api/health" },
   { name: "Reef Hive", label: "reef.tunaos.org", group: "hive", path: "/api/health" },
   { name: "Hive hub", label: "hub.tunaos.org", group: "hive", path: "/" },
   { name: "Personal Hive", label: "hive.reilly.asia", group: "hive", path: "/api/health" },

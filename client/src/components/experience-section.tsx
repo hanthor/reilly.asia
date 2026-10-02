@@ -13,6 +13,17 @@ const tagLinks: Record<string, string> = {
 export default function ExperienceSection() {
   const workExperience = [
     {
+      company: "Hive (hivecommons)",
+      title: "Maintainer",
+      date: "August 2026 - Present",
+      description: "One of three maintainers of Hive, the open-source AI agent orchestrator that runs a fleet of agents across every level of project maintenance. Approver and code owner for its security-sensitive surface — container builds, CI/CD and release gates, Kubernetes deployment, the egress proxy and hub authentication — and I run it in production for TunaOS.",
+      tags: ["AI Agents", "Go", "Kubernetes", "Maintainer"],
+      url: "https://github.com/hivecommons/hive",
+      logo: "/hivecommons.png",
+      primaryColor: "#1f2328",
+      forceLightText: true,
+    },
+    {
       company: "AlmaLinux",
       title: "Co-Chair (Atomic SIG)",
       date: "May 2025 - Present",

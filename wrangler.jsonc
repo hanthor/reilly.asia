@@ -1,8 +1,8 @@
 {
   "name": "reilly-asia",
   "compatibility_date": "2025-06-29",
-  // Assets serve the site; the Worker only runs first for /infra (proxied
-  // handbook) so every other request stays a plain static-asset hit.
+  // The Worker runs first for every request: it redirects http:// and www.
+  // to https://reilly.asia, handles /infra, and hands the rest to the assets.
   "main": "./worker/index.ts",
   "assets": {
     "directory": "./dist/public",
@@ -10,7 +10,7 @@
     // Unknown paths get dist/public/404.html (the SPA shell, emitted by
     // vite.config.ts) with a real 404 status instead of an empty body.
     "not_found_handling": "404-page",
-    "run_worker_first": ["/infra", "/infra/*"]
+    "run_worker_first": true
   },
   "routes": [
     {

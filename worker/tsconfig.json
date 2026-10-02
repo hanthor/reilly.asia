@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["./**/*.ts", "../shared/infra.ts"],
+  "include": ["./**/*.ts", "../shared/infra.ts", "../shared/fleet.ts"],
   "exclude": ["./**/*.test.ts"]
 }

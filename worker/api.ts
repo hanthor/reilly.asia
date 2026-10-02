@@ -1,8 +1,9 @@
-// /infra/api/status and /infra/api/activity. Every upstream call is bounded by
+// /infra/api/status, /infra/api/activity and /infra/api/fleet. Every upstream call is bounded by
 // a timeout and every failure degrades to null — these endpoints never 500.
 
 import type { ActivityPayload, EndpointStatus, PublicEndpoint, StatusPayload } from "../shared/infra";
 import { PUBLIC_ENDPOINTS, tagFromReleaseUrl } from "../shared/infra";
+import { FACT_HOSTS, FACTS_RAW_BASE, sanitizeFacts, type FleetFacts, type FleetPayload } from "../shared/fleet";
 
 export interface ApiEnv {
   GITHUB_TOKEN?: string;
@@ -118,4 +119,49 @@ export async function buildActivity(env: ApiEnv, now = new Date()): Promise<Acti
 /** Activity where GitHub answered nothing — cache it briefly so it recovers quickly. */
 export function activityIsEmpty(a: ActivityPayload): boolean {
   return a.mergedTotal === null && a.mergedRenovate === null && a.mergedHive === null && a.ci.conclusion === null;
+}
+
+// --- /infra/api/fleet --------------------------------------------------------
+
+const FACTS_TIMEOUT_MS = 5000;
+const FACTS_MAX_BYTES = 64 * 1024;
+
+type Fetcher = (url: string, init: RequestInit) => Promise<Response>;
+
+async function fetchFacts(host: string, fetcher: Fetcher): Promise<FleetFacts | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FACTS_TIMEOUT_MS);
+  try {
+    const res = await fetcher(`${FACTS_RAW_BASE}${encodeURIComponent(host)}.json`, {
+      headers: { "User-Agent": UA, Accept: "application/json" },
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      await res.body?.cancel();
+      return null;
+    }
+    const text = await res.text();
+    if (text.length > FACTS_MAX_BYTES) return null;
+    return sanitizeFacts(JSON.parse(text), host);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Facts for every known host, fetched in parallel; a host that fails is null. */
+export async function buildFleet(
+  fetcher: Fetcher = (url, init) => fetch(url, init),
+  now = new Date(),
+  hosts: readonly string[] = FACT_HOSTS,
+): Promise<FleetPayload> {
+  const results = await Promise.all(hosts.map((h) => fetchFacts(h, fetcher)));
+  const out: Record<string, FleetFacts | null> = {};
+  hosts.forEach((h, i) => (out[h] = results[i]));
+  return { hosts: out, fetchedAt: now.toISOString() };
+}
+
+export function fleetIsEmpty(f: FleetPayload): boolean {
+  return Object.values(f.hosts).every((h) => h === null);
 }

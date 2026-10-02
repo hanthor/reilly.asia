@@ -2,6 +2,8 @@
 // fetched once at build time (see vite.config.ts), not from visitors'
 // browsers, so the page never hits GitHub's 60 req/h unauthenticated limit.
 export const featuredRepos = [
+  "hivecommons/hive",
+  "projectbluefin/utah",
   "ublue-os/bluefin-lts",
   "projectbluefin/bootc-installer",
   "projectbluefin/dakota",

@@ -16,8 +16,8 @@ export default function AboutSection() {
             <CardContent className="p-6">
               <h3 className="text-xl font-heading font-semibold text-earth-brown dark:text-earth-cream mb-3">Professional Background</h3>
               <p className="text-earth-brown dark:text-earth-cream leading-relaxed">
-                I'm a freelance systems engineer based in India, working primarily with U.S. clients — and open to
-                engagements anywhere. I help organizations modernize their technology stack using bootable
+                I'm a freelance systems engineer based in India, working primarily with U.S. clients through my
+                Ohio-registered company, James Reilly Consulting LLC — and open to engagements anywhere. I help organizations modernize their technology stack using bootable
                 container technologies and communication platforms, on-site or fully remote.
               </p>
             </CardContent>

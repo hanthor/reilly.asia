@@ -9,6 +9,7 @@ import { Automation } from "@/components/infra/automation";
 import { Fleet } from "@/components/infra/fleet";
 import { Stack } from "@/components/infra/stack";
 import { InfraFooter } from "@/components/infra/footer";
+import { useHostAnchors } from "@/components/infra/use-host-anchors";
 
 const TITLE = "Infrastructure · James Reilly";
 const DESCRIPTION =
@@ -51,6 +52,7 @@ export default function Infra() {
 
 function InfraPage() {
   useDocumentMeta(TITLE, DESCRIPTION);
+  useHostAnchors();
   return (
     <div className="infra min-h-screen font-sans antialiased">
       <InfraHeader />

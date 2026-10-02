@@ -5,34 +5,29 @@
 # Install dependencies
 npm install
 
-# Start development server
+# Start Vite development server
 npm run dev
 
-# Build for production
+# Start local Wrangler dev environment (Cloudflare Worker + Static Assets)
+npm run wrangler:dev
+
+# Build for production (emits Worker bundle and static assets to dist/public)
 npm run build
 
-# Preview production build
-npm run preview
+# Run unit and integration tests
+npm run test
 ```
 
-## Cloudflare Pages Deployment
+## Cloudflare Workers Deployment
 
-### Method 1: Direct Upload
+This site is deployed to Cloudflare Workers using Wrangler (`wrangler.jsonc`). The Cloudflare Worker handles canonical domain redirects (`http://` / `www.` -> `https://reilly.asia`), serves API endpoints (e.g. `/infra`), and routes static assets from `dist/public`.
 
-1. Build the project:
+### Deployment Steps
+
+1. Build and deploy using Wrangler CLI:
    ```bash
-   npm run build
+   npm run deploy
    ```
-
-2. Upload the `dist` folder to Cloudflare Pages
-
-### Method 2: Git Integration
-
-1. Connect your GitHub repository to Cloudflare Pages
-2. Set build configuration:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: `/` (leave empty)
 
 ## Project Structure
 
@@ -44,10 +39,12 @@ npm run preview
 │   │   ├── lib/           # Utilities and API functions
 │   │   └── types/         # TypeScript type definitions
 │   └── public/            # Static assets
-├── shared/                # Shared schemas and types
-├── server/                # Development server (not used in production)
+├── worker/                 # Cloudflare Worker entry point and API/routing handlers
+├── shared/                # Shared schemas, domain models, and type definitions
+├── server/                # Development Express server harness
 ├── dist/                  # Production build output
-└── attached_assets/       # Source assets
+│   └── public/            # Static assets and SPA 404 shell built by Vite
+└── wrangler.jsonc         # Cloudflare Worker configuration
 ```
 
 ## Contact Integration

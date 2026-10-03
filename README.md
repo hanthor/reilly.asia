@@ -1,4 +1,15 @@
 
+# reilly.asia
+
+Personal website and portfolio for [@hanthor](https://github.com/hanthor), built with React, Vite, Tailwind CSS, and Cloudflare Workers.
+
+**Live site:** https://reilly.asia
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- A GitHub account (for authentication on the contact form)
+
 ## Local Development
 
 ```bash

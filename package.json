@@ -52,6 +52,7 @@
     "connect-pg-simple": "^10.0.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "helmet": "^8.3.0",
     "lucide-react": "^0.563.0",
     "memorystore": "^1.6.7",
     "passport": "^0.7.0",

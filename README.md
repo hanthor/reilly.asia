@@ -15,9 +15,44 @@ npm run build
 npm run preview
 ```
 
-## Cloudflare Pages Deployment
+### Testing and Type Checking
 
-### Method 1: Direct Upload
+```bash
+# Run TypeScript type checking
+npm run check
+
+# Run unit tests with coverage
+npm run test
+
+# Watch tests during development
+npm run test:watch
+
+# View test UI dashboard
+npm run test:ui
+```
+
+## Cloudflare Deployment
+
+### Wrangler (Recommended)
+
+Deploy to Cloudflare Workers and Pages using Wrangler:
+
+```bash
+# Local development with Wrangler
+npm run wrangler:dev
+
+# Deploy to Cloudflare
+npm run deploy
+```
+
+Configuration is managed in `wrangler.jsonc`. Ensure you're authenticated with Wrangler before deploying:
+```bash
+npx wrangler login
+```
+
+### Cloudflare Pages (Manual)
+
+#### Method 1: Direct Upload
 
 1. Build the project:
    ```bash
@@ -26,7 +61,7 @@ npm run preview
 
 2. Upload the `dist` folder to Cloudflare Pages
 
-### Method 2: Git Integration
+#### Method 2: Git Integration
 
 1. Connect your GitHub repository to Cloudflare Pages
 2. Set build configuration:

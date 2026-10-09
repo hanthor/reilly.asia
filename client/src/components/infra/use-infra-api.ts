@@ -2,15 +2,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ActivityPayload, StatusPayload } from "@shared/infra";
 import type { FleetPayload } from "@shared/fleet";
+import { createJsonFetcher } from "@shared/fetcher";
 
-async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`${res.status}`);
-  const type = res.headers.get("Content-Type") ?? "";
-  // The Vite dev server answers unknown paths with index.html.
-  if (!type.includes("json")) throw new Error("not json");
-  return (await res.json()) as T;
-}
+const getJson = createJsonFetcher({ timeout: 5000, userAgent: "reilly.asia-client" });
 
 export function useInfraStatus() {
   return useQuery({

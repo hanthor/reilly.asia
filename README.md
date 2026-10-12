@@ -5,8 +5,17 @@
 # Install dependencies
 npm install
 
+# Type checking
+npm run check
+
+# Run unit tests
+npm run test
+
 # Start development server
 npm run dev
+
+# Start Wrangler development server (for Workers/Wrangler scripts)
+npm run wrangler:dev
 
 # Build for production
 npm run build
@@ -14,6 +23,40 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### Running Tests and Type Checks
+
+Before committing or deploying, ensure all tests pass and types are correct:
+
+```bash
+# Check TypeScript types (detects compile errors without emitting files)
+npm run check
+
+# Run unit tests using Vitest
+npm run test
+```
+
+These checks must pass in CI before deployment.
+
+### Wrangler Development and Deployment
+
+This project uses Wrangler (Cloudflare's CLI) to manage Workers scripts and Cloudflare configuration. Configuration is defined in `wrangler.jsonc`.
+
+**Local development with Wrangler:**
+
+```bash
+npm run wrangler:dev
+```
+
+This starts a local development server that simulates Cloudflare Workers runtime. Useful for testing Worker logic and API endpoints before deployment.
+
+**Deploy to Cloudflare:**
+
+```bash
+npm run deploy
+```
+
+This builds the project and deploys it using Wrangler. Requires Cloudflare authentication and appropriate permissions on the target account/zone.
 
 ## Cloudflare Pages Deployment
 

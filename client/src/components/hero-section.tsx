@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Mail, Github, MapPin, Globe, MessageSquare, LinkedinIcon } from "lucide-react";
+import { contactConfig } from "@/lib/contact-config";
 
 const inlineLink =
   "underline underline-offset-2 font-semibold text-white hover:text-earth-orange transition-colors";
@@ -59,13 +60,13 @@ export default function HeroSection() {
                 </a>
               </Button>
               <Button asChild className={secondaryCta}>
-                <a href="https://github.com/hanthor" target="_blank" rel="noopener noreferrer">
+                <a href={contactConfig.github.url} target="_blank" rel="noopener noreferrer">
                   <Github className="mr-2 h-4 w-4" aria-hidden="true" />
                   GitHub
                 </a>
               </Button>
               <Button asChild className={secondaryCta}>
-                <a href="https://www.linkedin.com/in/jreilly112/" target="_blank" rel="noopener noreferrer">
+                <a href={contactConfig.linkedin.url} target="_blank" rel="noopener noreferrer">
                   <LinkedinIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                   LinkedIn
                 </a>
@@ -83,12 +84,12 @@ export default function HeroSection() {
           <div className="flex items-center">
             <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />
             <a
-              href="https://matrix.to/#/@james:reilly.asia"
+              href={contactConfig.matrix.url}
               target="_blank"
               rel="noopener noreferrer"
               className="underline-offset-2 hover:underline"
             >
-              Matrix: @james:reilly.asia
+              Matrix: {contactConfig.matrix.id}
             </a>
           </div>
         </div>

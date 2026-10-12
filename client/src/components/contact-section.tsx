@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Linkedin, Github, MessageSquare, Info } from "lucide-react";
-
-const CONTACT_EMAIL = "jreilly1821@gmail.com";
+import { Info } from "lucide-react";
+import { contactConfig, socialLinks } from "@/lib/contact-config";
 
 const projectTypes = [
   { value: "bootc", label: "bootc Infrastructure" },
@@ -14,30 +13,6 @@ const projectTypes = [
   { value: "sysadmin", label: "Systems Administration" },
   { value: "consulting", label: "General Consulting" },
   { value: "other", label: "Other" },
-];
-
-const contactMethods = [
-  {
-    icon: Linkedin,
-    title: "LinkedIn",
-    subtitle: "Professional Network",
-    url: "https://www.linkedin.com/in/jreilly112/",
-    color: "text-earth-teal dark:text-earth-orange",
-  },
-  {
-    icon: Github,
-    title: "GitHub",
-    subtitle: "@hanthor",
-    url: "https://github.com/hanthor",
-    color: "text-earth-brown dark:text-earth-cream",
-  },
-  {
-    icon: MessageSquare,
-    title: "Matrix",
-    subtitle: "@james:reilly.asia",
-    url: "https://matrix.to/#/@james:reilly.asia",
-    color: "text-earth-rust dark:text-earth-orange",
-  },
 ];
 
 const labelClass = "text-earth-cream";
@@ -112,7 +87,7 @@ ${message}
 ---
 Sent from James Reilly's portfolio website`;
 
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${contactConfig.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setStatus(
       "Your email app should now open with the message pre-filled. If nothing happened, reach me on Matrix or LinkedIn instead.",
     );
@@ -148,10 +123,10 @@ Sent from James Reilly's portfolio website`;
             </div>
 
             <div className="space-y-4">
-              {contactMethods.map((method) => (
+              {socialLinks.map((method) => (
                 <a
                   key={method.title}
-                  href={method.url}
+                  href={method.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center p-4 bg-earth-cream dark:bg-earth-brown rounded-lg border border-earth-rust dark:border-earth-cream/20 hover:shadow-md hover:border-earth-teal dark:hover:border-earth-orange transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

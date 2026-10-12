@@ -2,8 +2,10 @@
 // names/groups, host READMEs, docs/src/automation.md). Architecture only:
 // no addresses, ports, instance IDs or allowlists belong in this file.
 
+import { contactConfig } from "@/lib/contact-config";
+
 export const HANDBOOK = "/infra/handbook/";
-export const REPO_URL = "https://github.com/hanthor/dotfiles";
+export const REPO_URL = contactConfig.repos.dotfiles;
 
 export const handbook = (page: string) => HANDBOOK + page;
 
@@ -259,7 +261,7 @@ export const STACK: StackItem[] = [
   {
     name: "Cloudflare",
     what: "DNS and proxying, plus the Worker that serves this page, the handbook and the live checks.",
-    href: "https://github.com/hanthor/reilly.asia",
+    href: contactConfig.repos.reillyAsia,
   },
   {
     name: "GitHub Actions",

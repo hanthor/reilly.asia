@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ActivityPayload, StatusPayload } from "@shared/infra";
+import { INFRA_API_PATHS } from "@shared/infra-routes";
 import type { FleetPayload } from "@shared/fleet";
 
 async function getJson<T>(url: string): Promise<T> {
@@ -14,8 +15,8 @@ async function getJson<T>(url: string): Promise<T> {
 
 export function useInfraStatus() {
   return useQuery({
-    queryKey: ["/infra/api/status"],
-    queryFn: () => getJson<StatusPayload>("/infra/api/status"),
+    queryKey: [INFRA_API_PATHS.status],
+    queryFn: () => getJson<StatusPayload>(INFRA_API_PATHS.status),
     refetchInterval: 60_000,
     refetchIntervalInBackground: false,
     staleTime: 30_000,
@@ -24,16 +25,16 @@ export function useInfraStatus() {
 
 export function useInfraActivity() {
   return useQuery({
-    queryKey: ["/infra/api/activity"],
-    queryFn: () => getJson<ActivityPayload>("/infra/api/activity"),
+    queryKey: [INFRA_API_PATHS.activity],
+    queryFn: () => getJson<ActivityPayload>(INFRA_API_PATHS.activity),
     staleTime: Infinity,
   });
 }
 
 export function useFleetFacts() {
   return useQuery({
-    queryKey: ["/infra/api/fleet"],
-    queryFn: () => getJson<FleetPayload>("/infra/api/fleet"),
+    queryKey: [INFRA_API_PATHS.fleet],
+    queryFn: () => getJson<FleetPayload>(INFRA_API_PATHS.fleet),
     staleTime: 5 * 60_000,
   });
 }

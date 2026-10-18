@@ -1,6 +1,8 @@
 // Pure routing for everything under /infra. Kept separate from index.ts so it
 // can be unit-tested without a Workers runtime.
 
+import { INFRA_API_PATHS, INFRA_API_PREFIX } from "../shared/infra-routes";
+
 export const INFRA_PREFIX = "/infra";
 export const HANDBOOK_PREFIX = "/infra/handbook";
 export const HANDBOOK_ORIGIN = "https://hanthor.github.io/dotfiles";
@@ -20,10 +22,10 @@ export function classifyInfraPath(pathname: string, search = ""): InfraRoute {
   if (pathname === INFRA_PREFIX + "/") return { kind: "landing" };
   if (!pathname.startsWith(INFRA_PREFIX + "/")) return { kind: "pass" };
 
-  if (pathname === "/infra/api/status") return { kind: "api-status" };
-  if (pathname === "/infra/api/activity") return { kind: "api-activity" };
-  if (pathname === "/infra/api/fleet") return { kind: "api-fleet" };
-  if (pathname === "/infra/api" || pathname.startsWith("/infra/api/")) return { kind: "api-not-found" };
+  if (pathname === INFRA_API_PATHS.status) return { kind: "api-status" };
+  if (pathname === INFRA_API_PATHS.activity) return { kind: "api-activity" };
+  if (pathname === INFRA_API_PATHS.fleet) return { kind: "api-fleet" };
+  if (pathname === INFRA_API_PREFIX || pathname.startsWith(INFRA_API_PREFIX + "/")) return { kind: "api-not-found" };
 
   if (pathname === HANDBOOK_PREFIX) return { kind: "redirect", location: `${HANDBOOK_PREFIX}/${search}` };
   if (pathname.startsWith(HANDBOOK_PREFIX + "/")) {

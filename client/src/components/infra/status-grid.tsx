@@ -1,14 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import {
   PUBLIC_ENDPOINTS,
-  formatAgo,
-  formatLatency,
-  latencyTier,
   summarize,
   type EndpointGroup,
   type EndpointStatus,
   type OverallState,
 } from "@shared/infra";
+import { formatAgo, formatLatency, latencyTier } from "@/lib/infra-formatters";
 import { cn } from "@/lib/utils";
 import { Section } from "./section";
 import { StatusDot, toneFor } from "./status-dot";

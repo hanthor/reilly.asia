@@ -1,5 +1,5 @@
 import { Bot, GitPullRequest, MessageSquare, RefreshCcw, ShieldCheck } from "lucide-react";
-import { ciState, formatAgo, formatCount } from "@shared/infra";
+import { ciState, formatAgo, formatCount } from "@/lib/infra-formatters";
 import { cn } from "@/lib/utils";
 import { MECHANISMS, PIPELINE, handbook } from "./data";
 import { Section } from "./section";

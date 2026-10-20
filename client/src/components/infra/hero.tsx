@@ -1,5 +1,6 @@
 import { Github, BookOpen } from "lucide-react";
-import { ciState, formatAgo, formatCount, summarize } from "@shared/infra";
+import { summarize } from "@shared/infra";
+import { ciState, formatAgo, formatCount } from "@/lib/infra-formatters";
 import { cn } from "@/lib/utils";
 import { HANDBOOK, REPO_URL } from "./data";
 import { StatusDot } from "./status-dot";

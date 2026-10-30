@@ -5,6 +5,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
 const Infra = lazy(() => import("@/pages/infra"));
+const GhStats = lazy(() => import("@/pages/ghstats"));
 
 function Router() {
   return (
@@ -13,6 +14,11 @@ function Router() {
       <Route path="/infra">
         <Suspense fallback={null}>
           <Infra />
+        </Suspense>
+      </Route>
+      <Route path="/ghstats">
+        <Suspense fallback={null}>
+          <GhStats />
         </Suspense>
       </Route>
       <Route component={NotFound} />

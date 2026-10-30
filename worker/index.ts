@@ -13,6 +13,7 @@
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
 
 import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
+import { buildGhStats, type GhStatsEnv } from "./ghstats-api";
 import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
@@ -27,6 +28,7 @@ const STATUS_TTL = 60;
 const ACTIVITY_TTL = 3600;
 const ACTIVITY_EMPTY_TTL = 300;
 const FLEET_TTL = 600;
+const GHSTATS_TTL = 900; // 15 minutes
 const FLEET_EMPTY_TTL = 60;
 
 function methodNotAllowed(): Response {
@@ -125,6 +127,11 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildFleet();
           return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
+        });
+      case "api-ghstats":
+        return cachedJson(request, ctx, async () => {
+          const body = await buildGhStats(env);
+          return { body, ttl: GHSTATS_TTL };
         });
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {

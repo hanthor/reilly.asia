@@ -1,0 +1,47 @@
+name: Publish ghstats snapshot
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Collect stats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use tsx to run TypeScript directly
+          npx tsx scripts/ghstats.ts > ghstats-snapshot.json
+          # Verify it's valid JSON
+          jq empty ghstats-snapshot.json
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Delete old release if it exists
+          gh release delete ghstats-data --yes --cleanup-tag 2>/dev/null || true
+          
+          # Create new release with the snapshot
+          gh release create ghstats-data \
+            --title "GitHub Stats Snapshot" \
+            --notes "Auto-generated stats snapshot $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
+            --prerelease \
+            ghstats-snapshot.json#ghstats.json

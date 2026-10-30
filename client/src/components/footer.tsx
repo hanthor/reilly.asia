@@ -27,6 +27,10 @@ export default function Footer() {
             ))}
           </div>
         </div>
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-6 text-sm">
+          <a href="/infra" className="text-earth-cream hover:text-earth-orange transition-colors">Infrastructure</a>
+          <a href="/ghstats" className="text-earth-cream hover:text-earth-orange transition-colors">GitHub Stats</a>
+        </div>
 
         <div className="border-t border-earth-rust dark:border-earth-rust mt-8 pt-8 text-center text-sm text-earth-cream dark:text-earth-cream">
           <p className="font-bold">James Reilly Consulting LLC</p>

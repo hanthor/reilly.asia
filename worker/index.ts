@@ -68,8 +68,12 @@ async function cachedJson(
   request: Request,
   ctx: Ctx,
   build: () => Promise<{ body: unknown; ttl: number }>,
+  version = "",
 ): Promise<Response> {
-  const key = new Request(new URL(new URL(request.url).pathname, request.url).toString(), { method: "GET" });
+  const keyUrl = new URL(request.url);
+  keyUrl.search = "";
+  if (version) keyUrl.searchParams.set("_cache", version);
+  const key = new Request(keyUrl.toString(), { method: "GET" });
   const cache = caches.default;
   try {
     const hit = await cache.match(key);
@@ -132,7 +136,7 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildGhStats(env);
           return { body, ttl: GHSTATS_TTL };
-        });
+        }, "v2");
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {
           status: 404,

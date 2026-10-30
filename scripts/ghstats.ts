@@ -4,18 +4,21 @@
 // to a release asset ghstats.json so the Worker and /ghstats page can use it.
 //
 // Fetches:
-// 1. All merged PRs by the user in the last 365 days via GraphQL (paged, windowed by month)
-// 2. User profile (createdAt, followers, publicRepos)
-// 3. Contribution calendar
-// 4. Recent merges with titles (REST search, for the feed)
-// 5. Recent public events
+// 1. All merged PRs by the user in the last 365 days via GraphQL (paged, 7-day windows)
+// 2. All created PRs (open, closed, or merged) in the same range and windows
+// 3. User profile (createdAt, followers, publicRepos)
+// 4. Contribution calendar
+// 5. Recent merges with titles (REST search, for the feed)
+// 6. Recent public events
 //
 // No TypeScript runtime deps; run directly with `node --input-type=module` or
 // Node 20.6+ with a .mts extension.
 
+import { setTimeout as sleep } from "node:timers/promises";
 import {
   GH_LOGIN,
   MERGED_PR_QUERY,
+  CREATED_PR_QUERY,
   type GhSnapshot,
   type PrRow,
   type RecentMerge,
@@ -40,19 +43,38 @@ const headers = {
 
 type Json = Record<string, unknown>;
 
+const GQL_ATTEMPTS = 4;
+
 async function gql<T>(query: string, variables: Json = {}): Promise<T> {
-  const res = await fetch(GITHUB_GRAPHQL, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ query, variables }),
-  });
-  if (!res.ok) {
+  for (let attempt = 1; ; attempt++) {
+    const res = await fetch(GITHUB_GRAPHQL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query, variables }),
+    });
     const text = await res.text();
-    throw new Error(`GraphQL error ${res.status}: ${text.slice(0, 200)}`);
+    let body: { data?: T; errors?: unknown[] } | null = null;
+    if (res.ok) {
+      try {
+        body = JSON.parse(text) as { data?: T; errors?: unknown[] };
+      } catch {
+        body = null;
+      }
+    }
+    // GitHub's search API intermittently times out heavy pages as 502/503/504
+    // or a truncated 200 body.
+    const transient = res.status === 502 || res.status === 503 || res.status === 504 || (res.ok && body === null);
+    if (transient && attempt < GQL_ATTEMPTS) {
+      console.warn(`GraphQL ${res.ok ? "truncated response" : res.status}; retrying (${attempt}/${GQL_ATTEMPTS - 1})`);
+      await sleep(attempt * 2_000);
+      continue;
+    }
+    if (!res.ok || body === null) {
+      throw new Error(`GraphQL error ${res.status}: ${text.slice(0, 200)}`);
+    }
+    if (body.errors) throw new Error(`GraphQL errors: ${JSON.stringify(body.errors).slice(0, 200)}`);
+    return body.data!;
   }
-  const body = (await res.json()) as { data?: T; errors?: unknown[] };
-  if (body.errors) throw new Error(`GraphQL errors: ${JSON.stringify(body.errors).slice(0, 200)}`);
-  return body.data!;
 }
 
 async function rest<T>(path: string): Promise<T> {
@@ -77,6 +99,12 @@ interface PullRequest {
   repository: { nameWithOwner: string };
 }
 
+interface CreatedPullRequest {
+  number: number;
+  createdAt: string;
+  repository: { nameWithOwner: string };
+}
+
 /** GitHub GraphQL response types for contribution calendar. */
 interface ContributionCalendarDay {
   contributionCount: number;
@@ -88,22 +116,35 @@ interface ContributionCalendarWeek {
   contributionDays: ContributionCalendarDay[];
 }
 
+/** GitHub search returns at most 1000 results per query; peaks exceed that over 30 days. */
+const SEARCH_RESULT_CAP = 1000;
+const SEARCH_WINDOW_DAYS = 7;
+
+/** Inclusive UTC date ranges covering the trailing 365 days, newest first. */
+function searchWindows(now: Date): Array<[string, string]> {
+  const windows: Array<[string, string]> = [];
+  for (let daysBack = 0; daysBack < 365; daysBack += SEARCH_WINDOW_DAYS) {
+    const windowDays = Math.min(SEARCH_WINDOW_DAYS, 365 - daysBack);
+    const end = new Date(now.getTime() - daysBack * 86_400_000);
+    const start = new Date(end.getTime() - windowDays * 86_400_000);
+    windows.push([start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)]);
+  }
+  return windows;
+}
+
+function assertUnderSearchCap(query: string, issueCount: number) {
+  if (issueCount > SEARCH_RESULT_CAP) {
+    throw new Error(`Search window exceeds ${SEARCH_RESULT_CAP} results (${issueCount}): ${query}`);
+  }
+}
+
 /** Fetch all merged PRs authored by hanthor in the last 365 days, via GraphQL. */
 async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
   const since = now.getTime() - 365 * 86_400_000;
   const out: PullRequest[] = [];
   const seen = new Set<string>();
 
-  // Fetch the exact trailing 365-day range in 30-day windows.
-  for (let month = 0; month <= 12; month++) {
-    const daysBack = month * 30;
-    if (daysBack >= 365) break;
-
-    const windowDays = Math.min(30, 365 - daysBack);
-    const end = new Date(now.getTime() - daysBack * 86_400_000);
-    const start = new Date(end.getTime() - windowDays * 86_400_000);
-    const endStr = end.toISOString().slice(0, 10);
-    const startStr = start.toISOString().slice(0, 10);
+  for (const [startStr, endStr] of searchWindows(now)) {
     const query = `${MERGED_PR_QUERY} merged:${startStr}..${endStr}`;
 
     let cursor: string | null = null;
@@ -120,6 +161,7 @@ async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
         `query($q:String!,$first:Int!,$after:String){search(type:ISSUE,query:$q,first:$first,after:$after){issueCount pageInfo{hasNextPage endCursor} nodes{... on PullRequest{number title url createdAt mergedAt additions deletions changedFiles mergedBy{login} repository{nameWithOwner}}}} rateLimit{remaining resetAt}}`,
         variables,
       );
+      assertUnderSearchCap(query, result.search.issueCount);
 
       const nodes = (result.search.nodes ?? []) as PullRequest[];
       for (const pr of nodes) {
@@ -145,6 +187,49 @@ async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
     unique[key] = pr;
   }
   return Object.values(unique).sort((a, b) => b.number - a.number);
+}
+
+/** Fetch all public PRs authored in the last 365 days, regardless of merge status. */
+async function fetchCreatedPrs(now: Date): Promise<number[]> {
+  const since = now.getTime() - 365 * 86_400_000;
+  const out: number[] = [];
+  const seen = new Set<string>();
+
+  for (const [startStr, endStr] of searchWindows(now)) {
+    const query = `${CREATED_PR_QUERY} created:${startStr}..${endStr}`;
+
+    let cursor: string | null = null;
+    let pageNum = 0;
+    let hasMore = true;
+    while (hasMore && pageNum < 20) {
+      pageNum++;
+      const result = await gql<{
+        search: { issueCount: number; pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: unknown[] };
+        rateLimit: { remaining: number; resetAt: string };
+      }>(
+        `query($q:String!,$first:Int!,$after:String){search(type:ISSUE,query:$q,first:$first,after:$after){issueCount pageInfo{hasNextPage endCursor} nodes{... on PullRequest{number createdAt repository{nameWithOwner}}}} rateLimit{remaining resetAt}}`,
+        { q: query, first: 100, after: cursor },
+      );
+      assertUnderSearchCap(query, result.search.issueCount);
+
+      for (const pr of (result.search.nodes ?? []) as CreatedPullRequest[]) {
+        const createdAt = Date.parse(pr.createdAt);
+        const key = `${pr.repository.nameWithOwner}#${pr.number}`;
+        if (createdAt >= since && !seen.has(key)) {
+          out.push(Math.floor(createdAt / 1000));
+          seen.add(key);
+        }
+      }
+      hasMore = result.search.pageInfo.hasNextPage;
+      cursor = result.search.pageInfo.endCursor ?? null;
+      if (result.rateLimit.remaining < 200) {
+        console.warn(`Rate limit low: ${result.rateLimit.remaining}`);
+        break;
+      }
+    }
+  }
+
+  return out.sort((a, b) => a - b);
 }
 
 /** Fetch the user's profile and contribution calendar. */
@@ -220,14 +305,15 @@ async function main() {
   const now = new Date();
   console.error(`Fetching GitHub stats for ${GH_LOGIN} at ${now.toISOString()}`);
 
-  const [prs, profile, recent, events] = await Promise.all([
+  const [prs, createdPrs, profile, recent, events] = await Promise.all([
     fetchMergedPrs(now),
+    fetchCreatedPrs(now),
     fetchProfile(now),
     fetchRecentMerges(new Date(now.getTime() - 7 * 86_400_000)), // last 7 days
     fetchRecentEvents(),
   ]);
 
-  console.error(`Fetched ${prs.length} merged PRs, ${recent.length} recent with titles, ${events.length} events`);
+  console.error(`Fetched ${prs.length} merged PRs and ${createdPrs.length} created PRs, ${recent.length} recent with titles, ${events.length} events`);
 
   // Build the repos list and PR rows.
   const repos = new Map<string, number>();
@@ -255,13 +341,14 @@ async function main() {
     totals: profile.totals,
     repos: Array.from(repos.keys()),
     prs: prRows,
+    createdPrs,
     recent,
     events,
   };
 
   const json = JSON.stringify(snapshot, null, 2);
   console.error(`Snapshot size: ${json.length} bytes`);
-  console.error(`PRs: ${prRows.length}, Repos: ${repos.size}, Recent: ${recent.length}, Events: ${events.length}`);
+  console.error(`PRs: ${prRows.length}, created PRs: ${createdPrs.length}, Repos: ${repos.size}, Recent: ${recent.length}, Events: ${events.length}`);
   // stdout is the JSON asset consumed by the workflow.
   console.log(json);
 }

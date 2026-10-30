@@ -60,9 +60,9 @@ The contact form uses `mailto:` links to open the user's default email client wi
 
 ## GitHub API Integration
 
-The site fetches live data from GitHub's public API:
-- In development: Uses proxy to avoid CORS issues
-- In production: Direct API calls to GitHub (no authentication required)
+The portfolio uses GitHub's public API for live repository data. The `/ghstats` dashboard uses an hourly GitHub Actions snapshot published as the `ghstats-data` release asset.
+
+The snapshot tracks public PRs authored by `hanthor` during the trailing 365 days, including PRs that are still open or were closed without merging. The dashboard reports created and merged PR counts and UTC daily trends separately.
 
 ## License
 

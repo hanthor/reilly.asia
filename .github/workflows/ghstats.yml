@@ -30,7 +30,7 @@ jobs:
           # Use tsx to run TypeScript directly
           npx tsx scripts/ghstats.ts > ghstats.json
           # Verify it's valid JSON
-          jq -e '.v == 1 and (.prs | type == "array")' ghstats.json
+          jq -e '.v == 1 and (.prs | type == "array") and (.createdPrs | type == "array")' ghstats.json
 
       - name: Create or update release
         env:

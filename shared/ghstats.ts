@@ -15,6 +15,8 @@ export const SNAPSHOT_URL = `https://github.com/hanthor/reilly.asia/releases/dow
 
 /** Only public PRs: the snapshot and the live overlay both filter on this. */
 export const MERGED_PR_QUERY = `author:${GH_LOGIN} is:pr is:merged is:public`;
+/** All public PRs authored by the user, including open and closed-unmerged PRs. */
+export const CREATED_PR_QUERY = `author:${GH_LOGIN} is:pr is:public`;
 
 /** One merged PR: [repo index, number, createdAt s, mergedAt s, additions, deletions, changed files, merged by author 1/0]. */
 export type PrRow = [number, number, number, number, number, number, number, number];
@@ -52,6 +54,8 @@ export interface GhSnapshot {
   totals: { commits: number; prs: number; reviews: number; issues: number } | null;
   repos: string[];
   prs: PrRow[];
+  /** UTC epoch seconds for public PRs created in the trailing 365 days, merged or not. */
+  createdPrs?: number[];
   /** The newest merges, with titles, newest first. */
   recent: RecentMerge[];
   events: GhEvent[];

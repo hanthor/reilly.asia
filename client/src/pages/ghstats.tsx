@@ -361,8 +361,11 @@ export default function GhStats() {
     );
   }
 
+  const createdPrs = snapshot.createdPrs;
   const dailyMerges = getDailyMerges(snapshot.prs);
   const cumulativeMerges = getCumulativeMerges(dailyMerges);
+  const dailyCreations = createdPrs === undefined ? null : getDailyCreations(createdPrs);
+  const cumulativeCreations = dailyCreations ? getCumulativeMerges(dailyCreations) : null;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -376,13 +379,23 @@ export default function GhStats() {
 
       <div className="space-y-8">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <KpiCard label="PRs Merged" value={snapshot.prs.length} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <KpiCard
+            label="PRs Created (365d)"
+            value={createdPrs?.length ?? "—"}
+            subtext={createdPrs === undefined ? "Waiting for the next snapshot" : undefined}
+          />
+          <KpiCard label="PRs Merged (365d)" value={snapshot.prs.length} />
           <KpiCard label="Contributions" value={snapshot.totals?.prs || 0} />
           <KpiCard label="Code Review" value={snapshot.totals?.reviews || 0} />
           <KpiCard label="Followers" value={snapshot.profile.followers} />
         </div>
 
+        {dailyCreations === null && (
+          <p className="text-sm text-muted-foreground">
+            PR-created history will appear after the next snapshot refresh.
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SimpleChart
             title="PRs Merged per Day (UTC)"
@@ -397,6 +410,23 @@ export default function GhStats() {
             rangeLabels={[dailyMerges[0].date, "Today"]}
             variant="line"
           />
+          {dailyCreations && cumulativeCreations && (
+            <>
+              <SimpleChart
+                title="PRs Created per Day (UTC)"
+                data={dailyCreations.map((day) => day.count)}
+                pointLabels={dailyCreations.map((day) => day.date)}
+                rangeLabels={[dailyCreations[0].date, "Today"]}
+              />
+              <SimpleChart
+                title="Cumulative PRs Created (UTC)"
+                data={cumulativeCreations}
+                pointLabels={dailyCreations.map((day) => day.date)}
+                rangeLabels={[dailyCreations[0].date, "Today"]}
+                variant="line"
+              />
+            </>
+          )}
         </div>
 
         {/* Contribution Calendar */}
@@ -486,9 +516,17 @@ interface DailyMerge {
 }
 
 function getDailyMerges(prs: PrRow[]): DailyMerge[] {
+  return getDailySeries(prs, (pr) => pr[3]);
+}
+
+function getDailyCreations(createdPrs: number[]): DailyMerge[] {
+  return getDailySeries(createdPrs, (createdAt) => createdAt);
+}
+
+function getDailySeries<T>(items: T[], getTimestamp: (item: T) => number): DailyMerge[] {
   const dailyCounts = new Map<string, number>();
-  for (const pr of prs) {
-    const date = new Date(pr[3] * 1000).toISOString().slice(0, 10);
+  for (const item of items) {
+    const date = new Date(getTimestamp(item) * 1000).toISOString().slice(0, 10);
     dailyCounts.set(date, (dailyCounts.get(date) ?? 0) + 1);
   }
 

@@ -30,12 +30,14 @@ function SimpleChart({
   max,
   pointLabels,
   rangeLabels,
+  variant = "bar",
 }: {
   title: string;
   data: number[];
   max?: number;
   pointLabels?: string[];
   rangeLabels?: [string, string];
+  variant?: "bar" | "line";
 }) {
   const maxVal = max || Math.max(...data, 1);
   const baseline = 104;
@@ -54,22 +56,50 @@ function SimpleChart({
         aria-label={title}
       >
         <line x1="0" y1={baseline} x2="1000" y2={baseline} stroke="var(--border)" />
-        {data.map((value, index) => {
-          const height = value > 0 ? Math.max((value / maxVal) * plotHeight, 1.5) : 0;
-          return (
-            <rect
-              key={index}
-              x={index * slotWidth + (slotWidth - barWidth) / 2}
-              y={baseline - height}
-              width={barWidth}
-              height={height}
-              rx="1"
-              fill="currentColor"
-            >
-              <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
-            </rect>
-          );
-        })}
+        {variant === "line" ? (
+          <>
+            <polyline
+              points={data
+                .map((value, index) => {
+                  const x = (index / Math.max(data.length - 1, 1)) * 1000;
+                  const y = baseline - (value / maxVal) * plotHeight;
+                  return `${x},${y}`;
+                })
+                .join(" ")}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {data.map((value, index) => {
+              const x = (index / Math.max(data.length - 1, 1)) * 1000;
+              const y = baseline - (value / maxVal) * plotHeight;
+              return (
+                <circle key={index} cx={x} cy={y} r="5" fill="transparent">
+                  <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
+                </circle>
+              );
+            })}
+          </>
+        ) : (
+          data.map((value, index) => {
+            const height = value > 0 ? Math.max((value / maxVal) * plotHeight, 1.5) : 0;
+            return (
+              <rect
+                key={index}
+                x={index * slotWidth + (slotWidth - barWidth) / 2}
+                y={baseline - height}
+                width={barWidth}
+                height={height}
+                rx="1"
+                fill="currentColor"
+              >
+                <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
+              </rect>
+            );
+          })
+        )}
         {rangeLabels && (
           <>
             <text x="0" y="127" fill="var(--muted-foreground)" fontSize="20">{rangeLabels[0]}</text>
@@ -365,6 +395,7 @@ export default function GhStats() {
             data={cumulativeMerges}
             pointLabels={dailyMerges.map((day) => day.date)}
             rangeLabels={[dailyMerges[0].date, "Today"]}
+            variant="line"
           />
         </div>
 

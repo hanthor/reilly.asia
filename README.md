@@ -62,7 +62,7 @@ The contact form uses `mailto:` links to open the user's default email client wi
 
 The portfolio uses GitHub's public API for live repository data. The `/ghstats` dashboard uses an hourly GitHub Actions snapshot published as the `ghstats-data` release asset.
 
-The snapshot tracks public PRs authored by `hanthor` during the trailing 365 days, including PRs that are still open or were closed without merging. The dashboard reports created and merged PR counts and UTC daily trends separately.
+The snapshot tracks public PRs authored by `hanthor` during the trailing 365 days, including PRs that are still open or were closed without merging. The dashboard reports created and merged PR counts and UTC daily trends separately. Daily charts for created PRs, merged PRs and lines changed overlay a trailing 7-day average; hovering, tapping or using the arrow keys on a chart shows the day's values.
 
 ## License
 

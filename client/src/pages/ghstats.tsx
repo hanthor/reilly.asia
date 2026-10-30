@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent, type PointerEvent } from "react";
 import type { GhSnapshot, GhLive, GhEvent, PrRow } from "../../../shared/ghstats";
 
 interface ApiResponse {
@@ -24,89 +24,234 @@ function KpiCard({
   );
 }
 
-function SimpleChart({
-  title,
-  data,
-  max,
-  pointLabels,
-  rangeLabels,
-  variant = "bar",
-}: {
+const AVERAGE_WINDOW_DAYS = 7;
+const CHART_HEIGHT = 100;
+const LOG_TICKS = [1_000, 10_000, 100_000, 1_000_000];
+
+const formatCount = (value: number) => value.toLocaleString();
+const formatAverage = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+const formatCompact = (value: number) => new Intl.NumberFormat(undefined, { notation: "compact" }).format(value);
+
+interface TrendChartProps {
   title: string;
-  data: number[];
-  max?: number;
-  pointLabels?: string[];
-  rangeLabels?: [string, string];
+  values: number[];
+  /** One label per value: the UTC date, or a bucket name. */
+  labels: string[];
+  /** Tooltip name for the primary value, e.g. "Merged". */
+  valueLabel: string;
   variant?: "bar" | "line";
-}) {
-  const maxVal = max || Math.max(...data, 1);
-  const baseline = 104;
-  const plotHeight = 92;
-  const slotWidth = 1000 / Math.max(data.length, 1);
+  /** Trailing 7-day average drawn over the bars. */
+  average?: number[];
+  /** Log suits heavy-tailed series such as lines changed. */
+  scale?: "linear" | "log";
+  axisLabels?: [string, string];
+  caption?: string;
+  details?: (index: number) => string[];
+}
+
+function TrendChart({
+  title,
+  values,
+  labels,
+  valueLabel,
+  variant = "bar",
+  average,
+  scale = "linear",
+  axisLabels,
+  caption,
+  details,
+}: TrendChartProps) {
+  const [active, setActive] = useState<number | null>(null);
+  const count = Math.max(values.length, 1);
+  const project = scale === "log" ? (value: number) => Math.log10(1 + value) : (value: number) => value;
+  const maxProjected = project(Math.max(...values, 1));
+  const y = (value: number) => CHART_HEIGHT - (project(value) / maxProjected) * CHART_HEIGHT;
+  const slotWidth = 1000 / count;
   const barWidth = Math.min(slotWidth, Math.max(2.2, slotWidth * 0.72));
+  const centerX = (index: number) => (index + 0.5) * slotWidth;
+  const toPoints = (series: number[]) => series.map((value, index) => `${centerX(index)},${y(value)}`).join(" ");
+  const ticks = scale === "log" ? LOG_TICKS.filter((tick) => project(tick) < maxProjected) : [];
+  const activePct = active === null ? 0 : ((active + 0.5) / count) * 100;
+
+  const indexAt = (event: PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const index = Math.floor(((event.clientX - rect.left) / rect.width) * count);
+    return Math.min(count - 1, Math.max(0, index));
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const current = active ?? count - 1;
+    const next =
+      event.key === "ArrowLeft" ? Math.max(0, current - 1)
+      : event.key === "ArrowRight" ? Math.min(count - 1, current + 1)
+      : event.key === "Home" ? 0
+      : event.key === "End" ? count - 1
+      : undefined;
+    if (event.key === "Escape") setActive(null);
+    if (next === undefined) return;
+    event.preventDefault();
+    setActive(next);
+  };
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold">{title}</h3>
-      <svg
-        className="block h-32 w-full text-accent"
-        viewBox="0 0 1000 132"
-        preserveAspectRatio="none"
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        {average && (
+          <span className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true">
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-sm bg-accent opacity-40" />
+              Daily
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-0.5 w-3 bg-accent" />
+              {AVERAGE_WINDOW_DAYS}-day avg
+            </span>
+          </span>
+        )}
+      </div>
+      <div
+        className="relative h-28 touch-pan-y rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        tabIndex={0}
         role="img"
-        aria-label={title}
+        aria-label={`${title}. Use the arrow keys to inspect values.`}
+        onPointerDown={(event) => setActive(indexAt(event))}
+        onPointerMove={(event) => setActive(indexAt(event))}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse") setActive(null);
+        }}
+        onKeyDown={onKeyDown}
+        onBlur={() => setActive(null)}
       >
-        <line x1="0" y1={baseline} x2="1000" y2={baseline} stroke="var(--border)" />
-        {variant === "line" ? (
-          <>
+        <svg
+          className="block h-full w-full overflow-visible text-accent"
+          viewBox={`0 0 1000 ${CHART_HEIGHT}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          {ticks.map((tick) => (
+            <line
+              key={tick}
+              x1="0"
+              x2="1000"
+              y1={y(tick)}
+              y2={y(tick)}
+              stroke="var(--border)"
+              strokeDasharray="4 4"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          <line x1="0" y1={CHART_HEIGHT} x2="1000" y2={CHART_HEIGHT} stroke="var(--border)" vectorEffect="non-scaling-stroke" />
+          {variant === "line" ? (
             <polyline
-              points={data
-                .map((value, index) => {
-                  const x = (index / Math.max(data.length - 1, 1)) * 1000;
-                  const y = baseline - (value / maxVal) * plotHeight;
-                  return `${x},${y}`;
-                })
-                .join(" ")}
+              points={toPoints(values)}
               fill="none"
               stroke="currentColor"
-              strokeWidth="4"
-              strokeLinecap="round"
+              strokeWidth="2"
               strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
             />
-            {data.map((value, index) => {
-              const x = (index / Math.max(data.length - 1, 1)) * 1000;
-              const y = baseline - (value / maxVal) * plotHeight;
+          ) : (
+            values.map((value, index) => {
+              const height = value > 0 ? Math.max(CHART_HEIGHT - y(value), 1.5) : 0;
               return (
-                <circle key={index} cx={x} cy={y} r="5" fill="transparent">
-                  <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
-                </circle>
+                <rect
+                  key={index}
+                  x={centerX(index) - barWidth / 2}
+                  y={CHART_HEIGHT - height}
+                  width={barWidth}
+                  height={height}
+                  fill="currentColor"
+                  opacity={index === active ? 1 : average ? 0.4 : 0.85}
+                />
               );
-            })}
-          </>
-        ) : (
-          data.map((value, index) => {
-            const height = value > 0 ? Math.max((value / maxVal) * plotHeight, 1.5) : 0;
-            return (
-              <rect
+            })
+          )}
+          {average && (
+            <polyline
+              points={toPoints(average)}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+          {active !== null && (
+            <line
+              x1={centerX(active)}
+              x2={centerX(active)}
+              y1="0"
+              y2={CHART_HEIGHT}
+              stroke="var(--muted-foreground)"
+              strokeDasharray="3 3"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+        </svg>
+        {ticks.map((tick) => (
+          <span
+            key={tick}
+            className="pointer-events-none absolute left-0 -translate-y-full text-[10px] leading-none text-muted-foreground"
+            style={{ top: `${y(tick)}%` }}
+            aria-hidden="true"
+          >
+            {formatCompact(tick)}
+          </span>
+        ))}
+        {active !== null &&
+          [variant === "line" ? values[active] : undefined, average?.[active]]
+            .filter((value): value is number => value !== undefined)
+            .map((value, index) => (
+              <span
                 key={index}
-                x={index * slotWidth + (slotWidth - barWidth) / 2}
-                y={baseline - height}
-                width={barWidth}
-                height={height}
-                rx="1"
-                fill="currentColor"
-              >
-                <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
-              </rect>
-            );
-          })
+                className="pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-background"
+                style={{ left: `${activePct}%`, top: `${y(value)}%` }}
+                aria-hidden="true"
+              />
+            ))}
+        {active !== null && (
+          <div
+            className="pointer-events-none absolute bottom-full z-10 mb-2 w-max max-w-[16rem] rounded-md border border-border bg-popover px-2.5 py-1.5 text-xs text-popover-foreground shadow-md"
+            style={{ left: `${activePct}%`, transform: `translateX(-${activePct}%)` }}
+            aria-hidden="true"
+          >
+            <p className="font-medium">{labels[active]}</p>
+            <p>
+              {valueLabel}: <span className="font-semibold tabular-nums">{formatCount(values[active])}</span>
+            </p>
+            {average && (
+              <p>
+                {AVERAGE_WINDOW_DAYS}-day avg: <span className="tabular-nums">{formatAverage(average[active])}</span>
+              </p>
+            )}
+            {details?.(active).map((line) => (
+              <p key={line} className="text-muted-foreground tabular-nums">
+                {line}
+              </p>
+            ))}
+          </div>
         )}
-        {rangeLabels && (
-          <>
-            <text x="0" y="127" fill="var(--muted-foreground)" fontSize="20">{rangeLabels[0]}</text>
-            <text x="1000" y="127" fill="var(--muted-foreground)" fontSize="20" textAnchor="end">{rangeLabels[1]}</text>
-          </>
-        )}
-      </svg>
+      </div>
+      <p className="sr-only" aria-live="polite">
+        {active === null
+          ? ""
+          : [
+              labels[active],
+              `${valueLabel}: ${formatCount(values[active])}`,
+              average ? `${AVERAGE_WINDOW_DAYS}-day average: ${formatAverage(average[active])}` : null,
+              ...(details?.(active) ?? []),
+            ]
+              .filter(Boolean)
+              .join(", ")}
+      </p>
+      {axisLabels && (
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{axisLabels[0]}</span>
+          <span>{axisLabels[1]}</span>
+        </div>
+      )}
+      {caption && <p className="text-xs text-muted-foreground">{caption}</p>}
     </div>
   );
 }
@@ -226,10 +371,11 @@ function TimeToMerge({ prs }: { prs: PrRow[] }) {
         <KpiCard label="P90 (days)" value={p90.toFixed(1)} />
         <KpiCard label="Average (days)" value={avg.toFixed(1)} />
       </div>
-      <SimpleChart
+      <TrendChart
         title="Distribution"
-        data={buckets}
-        max={Math.max(...buckets)}
+        values={buckets}
+        labels={["Under 1 day", "1–7 days", "7–30 days", "30+ days"]}
+        valueLabel="PRs"
       />
     </div>
   );
@@ -296,7 +442,18 @@ function Punchcard({ prs }: { prs: PrRow[] }) {
   );
 }
 
-function LinesChanged({ prs }: { prs: PrRow[] }) {
+function LinesChanged({
+  prs,
+  days,
+  added: dailyAdded,
+  deleted: dailyDeleted,
+}: {
+  prs: PrRow[];
+  days: string[];
+  added: number[];
+  deleted: number[];
+}) {
+  const dailyChanged = dailyAdded.map((value, index) => value + dailyDeleted[index]);
   const added = prs.reduce((sum, pr) => sum + pr[4], 0);
   const deleted = prs.reduce((sum, pr) => sum + pr[5], 0);
   const totalFiles = prs.reduce((sum, pr) => sum + pr[6], 0);
@@ -309,6 +466,17 @@ function LinesChanged({ prs }: { prs: PrRow[] }) {
         <KpiCard label="Lines Deleted" value={deleted.toLocaleString()} />
         <KpiCard label="Files Changed" value={totalFiles.toLocaleString()} />
       </div>
+      <TrendChart
+        title="Lines Changed per Day (UTC, log scale)"
+        values={dailyChanged}
+        labels={days}
+        valueLabel="Lines changed"
+        average={rollingAverage(dailyChanged)}
+        scale="log"
+        axisLabels={[days[0], "Today"]}
+        caption="Additions plus deletions from PRs merged that day."
+        details={(index) => [`+${formatCount(dailyAdded[index])} added`, `−${formatCount(dailyDeleted[index])} deleted`]}
+      />
     </div>
   );
 }
@@ -362,10 +530,12 @@ export default function GhStats() {
   }
 
   const createdPrs = snapshot.createdPrs;
-  const dailyMerges = getDailyMerges(snapshot.prs);
-  const cumulativeMerges = getCumulativeMerges(dailyMerges);
-  const dailyCreations = createdPrs === undefined ? null : getDailyCreations(createdPrs);
-  const cumulativeCreations = dailyCreations ? getCumulativeMerges(dailyCreations) : null;
+  const days = trailingUtcDays();
+  const axisLabels: [string, string] = [days[0], "Today"];
+  const merged = sumByDay(days, snapshot.prs, (pr) => pr[3]);
+  const created = createdPrs === undefined ? null : sumByDay(days, createdPrs, (createdAt) => createdAt);
+  const added = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[4]);
+  const deleted = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[5]);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -391,40 +561,32 @@ export default function GhStats() {
           <KpiCard label="Followers" value={snapshot.profile.followers} />
         </div>
 
-        {dailyCreations === null && (
+        {created === null && (
           <p className="text-sm text-muted-foreground">
             PR-created history will appear after the next snapshot refresh.
           </p>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SimpleChart
+          <TrendChart
             title="PRs Merged per Day (UTC)"
-            data={dailyMerges.map((day) => day.count)}
-            pointLabels={dailyMerges.map((day) => day.date)}
-            rangeLabels={[dailyMerges[0].date, "Today"]}
+            values={merged}
+            labels={days}
+            valueLabel="Merged"
+            average={rollingAverage(merged)}
+            axisLabels={axisLabels}
           />
-          <SimpleChart
-            title="Cumulative PRs Merged (UTC)"
-            data={cumulativeMerges}
-            pointLabels={dailyMerges.map((day) => day.date)}
-            rangeLabels={[dailyMerges[0].date, "Today"]}
-            variant="line"
-          />
-          {dailyCreations && cumulativeCreations && (
+          <CumulativeChart title="Cumulative PRs Merged (UTC)" daily={merged} days={days} valueLabel="Total merged" />
+          {created && (
             <>
-              <SimpleChart
+              <TrendChart
                 title="PRs Created per Day (UTC)"
-                data={dailyCreations.map((day) => day.count)}
-                pointLabels={dailyCreations.map((day) => day.date)}
-                rangeLabels={[dailyCreations[0].date, "Today"]}
+                values={created}
+                labels={days}
+                valueLabel="Created"
+                average={rollingAverage(created)}
+                axisLabels={axisLabels}
               />
-              <SimpleChart
-                title="Cumulative PRs Created (UTC)"
-                data={cumulativeCreations}
-                pointLabels={dailyCreations.map((day) => day.date)}
-                rangeLabels={[dailyCreations[0].date, "Today"]}
-                variant="line"
-              />
+              <CumulativeChart title="Cumulative PRs Created (UTC)" daily={created} days={days} valueLabel="Total created" />
             </>
           )}
         </div>
@@ -442,7 +604,7 @@ export default function GhStats() {
         <Punchcard prs={snapshot.prs} />
 
         {/* Lines Changed */}
-        <LinesChanged prs={snapshot.prs} />
+        <LinesChanged prs={snapshot.prs} days={days} added={added} deleted={deleted} />
 
         {/* Recent Activity Feed */}
         {(snapshot.recent?.length || 0) > 0 && (
@@ -510,35 +672,59 @@ export default function GhStats() {
   );
 }
 
-interface DailyMerge {
-  date: string;
-  count: number;
+function CumulativeChart({
+  title,
+  daily,
+  days,
+  valueLabel,
+}: {
+  title: string;
+  daily: number[];
+  days: string[];
+  valueLabel: string;
+}) {
+  return (
+    <TrendChart
+      title={title}
+      values={cumulative(daily)}
+      labels={days}
+      valueLabel={valueLabel}
+      variant="line"
+      axisLabels={[days[0], "Today"]}
+      details={(index) => [`+${formatCount(daily[index])} that day`]}
+    />
+  );
 }
 
-function getDailyMerges(prs: PrRow[]): DailyMerge[] {
-  return getDailySeries(prs, (pr) => pr[3]);
+/** UTC dates (YYYY-MM-DD) for the trailing 366 days, oldest first, ending today. */
+function trailingUtcDays(): string[] {
+  const now = new Date();
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Array.from({ length: 366 }, (_, index) => new Date(todayUtc - (365 - index) * 86_400_000).toISOString().slice(0, 10));
 }
 
-function getDailyCreations(createdPrs: number[]): DailyMerge[] {
-  return getDailySeries(createdPrs, (createdAt) => createdAt);
-}
-
-function getDailySeries<T>(items: T[], getTimestamp: (item: T) => number): DailyMerge[] {
-  const dailyCounts = new Map<string, number>();
+/** Sum `weight` (default 1) per UTC day of `timestamp` (epoch seconds), aligned with `days`. */
+function sumByDay<T>(days: string[], items: T[], timestamp: (item: T) => number, weight: (item: T) => number = () => 1): number[] {
+  const indexByDay = new Map(days.map((day, index) => [day, index]));
+  const totals = new Array<number>(days.length).fill(0);
   for (const item of items) {
-    const date = new Date(getTimestamp(item) * 1000).toISOString().slice(0, 10);
-    dailyCounts.set(date, (dailyCounts.get(date) ?? 0) + 1);
+    const index = indexByDay.get(new Date(timestamp(item) * 1000).toISOString().slice(0, 10));
+    if (index !== undefined) totals[index] += weight(item);
   }
+  return totals;
+}
 
-  const today = new Date();
-  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
-  return Array.from({ length: 366 }, (_, index) => {
-    const date = new Date(todayUtc - (365 - index) * 86_400_000).toISOString().slice(0, 10);
-    return { date, count: dailyCounts.get(date) ?? 0 };
+/** Trailing mean; the first days average over the days available. */
+function rollingAverage(values: number[], window = AVERAGE_WINDOW_DAYS): number[] {
+  let sum = 0;
+  return values.map((value, index) => {
+    sum += value;
+    if (index >= window) sum -= values[index - window];
+    return sum / Math.min(window, index + 1);
   });
 }
 
-function getCumulativeMerges(dailyMerges: DailyMerge[]): number[] {
-  let cumulative = 0;
-  return dailyMerges.map(({ count }) => (cumulative += count));
+function cumulative(values: number[]): number[] {
+  let total = 0;
+  return values.map((value) => (total += value));
 }

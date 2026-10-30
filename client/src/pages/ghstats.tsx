@@ -28,10 +28,14 @@ function SimpleChart({
   title,
   data,
   max,
+  pointLabels,
+  rangeLabels,
 }: {
   title: string;
   data: number[];
   max?: number;
+  pointLabels?: string[];
+  rangeLabels?: [string, string];
 }) {
   const maxVal = max || Math.max(...data, 1);
   const baseline = 104;
@@ -43,8 +47,8 @@ function SimpleChart({
     <div className="space-y-2">
       <h3 className="text-sm font-semibold">{title}</h3>
       <svg
-        className="block h-28 w-full text-accent"
-        viewBox="0 0 1000 112"
+        className="block h-32 w-full text-accent"
+        viewBox="0 0 1000 132"
         preserveAspectRatio="none"
         role="img"
         aria-label={title}
@@ -62,10 +66,16 @@ function SimpleChart({
               rx="1"
               fill="currentColor"
             >
-              <title>{value}</title>
+              <title>{pointLabels?.[index] ? `${pointLabels[index]}: ${value}` : value}</title>
             </rect>
           );
         })}
+        {rangeLabels && (
+          <>
+            <text x="0" y="127" fill="var(--muted-foreground)" fontSize="20">{rangeLabels[0]}</text>
+            <text x="1000" y="127" fill="var(--muted-foreground)" fontSize="20" textAnchor="end">{rangeLabels[1]}</text>
+          </>
+        )}
       </svg>
     </div>
   );
@@ -321,6 +331,9 @@ export default function GhStats() {
     );
   }
 
+  const dailyMerges = getDailyMerges(snapshot.prs);
+  const cumulativeMerges = getCumulativeMerges(dailyMerges);
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-8">
@@ -340,16 +353,18 @@ export default function GhStats() {
           <KpiCard label="Followers" value={snapshot.profile.followers} />
         </div>
 
-        {/* Daily activity and cumulative */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Daily merges by aggregating PRs by date */}
           <SimpleChart
-            title="PRs Merged (by Day)"
-            data={getDailyMerges(snapshot.prs)}
+            title="PRs Merged per Day (UTC)"
+            data={dailyMerges.map((day) => day.count)}
+            pointLabels={dailyMerges.map((day) => day.date)}
+            rangeLabels={[dailyMerges[0].date, "Today"]}
           />
           <SimpleChart
-            title="Cumulative PRs Merged"
-            data={getCumulativeMerges(snapshot.prs)}
+            title="Cumulative PRs Merged (UTC)"
+            data={cumulativeMerges}
+            pointLabels={dailyMerges.map((day) => day.date)}
+            rangeLabels={[dailyMerges[0].date, "Today"]}
           />
         </div>
 
@@ -434,25 +449,27 @@ export default function GhStats() {
   );
 }
 
-function getDailyMerges(prs: PrRow[]): number[] {
-  const dailyMap: Record<string, number> = {};
-  for (const pr of prs) {
-    const date = new Date(pr[3] * 1000).toISOString().split("T")[0];
-    dailyMap[date] = (dailyMap[date] || 0) + 1;
-  }
-
-  // Get sorted unique dates and convert to array
-  const dates = Object.keys(dailyMap).sort();
-  return dates.map((d) => dailyMap[d]);
+interface DailyMerge {
+  date: string;
+  count: number;
 }
 
-function getCumulativeMerges(prs: PrRow[]): number[] {
-  const sorted = [...prs].sort((a, b) => a[3] - b[3]);
-  const result: number[] = [];
-  let cumulative = 0;
-  for (const pr of sorted) {
-    cumulative++;
-    result.push(cumulative);
+function getDailyMerges(prs: PrRow[]): DailyMerge[] {
+  const dailyCounts = new Map<string, number>();
+  for (const pr of prs) {
+    const date = new Date(pr[3] * 1000).toISOString().slice(0, 10);
+    dailyCounts.set(date, (dailyCounts.get(date) ?? 0) + 1);
   }
-  return result;
+
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  return Array.from({ length: 366 }, (_, index) => {
+    const date = new Date(todayUtc - (365 - index) * 86_400_000).toISOString().slice(0, 10);
+    return { date, count: dailyCounts.get(date) ?? 0 };
+  });
+}
+
+function getCumulativeMerges(dailyMerges: DailyMerge[]): number[] {
+  let cumulative = 0;
+  return dailyMerges.map(({ count }) => (cumulative += count));
 }

@@ -36,12 +36,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Delete old release if it exists
-          gh release delete ghstats-data --yes --cleanup-tag 2>/dev/null || true
-          
-          # Create new release with the snapshot
-          gh release create ghstats-data \
-            --title "GitHub Stats Snapshot" \
-            --notes "Auto-generated stats snapshot $(date -u +'%Y-%m-%d %H:%M:%S UTC')" \
-            --prerelease \
-            ghstats-snapshot.json#ghstats.json
+          # Keep the release stable; replace only the generated asset.
+          gh release view ghstats-data >/dev/null 2>&1 || \
+            gh release create ghstats-data \
+              --title "GitHub Stats Snapshot" \
+              --notes "Automatically refreshed GitHub statistics."
+          gh release upload ghstats-data ghstats-snapshot.json#ghstats.json --clobber

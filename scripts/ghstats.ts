@@ -90,18 +90,15 @@ interface ContributionCalendarWeek {
 
 /** Fetch all merged PRs authored by hanthor in the last 365 days, via GraphQL. */
 async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
-  const since = new Date(now.getTime() - 365 * 86_400_000).toISOString().slice(0, 10);
+  const since = now.getTime() - 365 * 86_400_000;
   const out: PullRequest[] = [];
   const seen = new Set<string>();
 
-  // Fetch by month to avoid hitting the 1000-result search limit.
-  // Fetch last 365 days in windows, stopping when we cross day 365
+  // Fetch the exact trailing 365-day range in 30-day windows.
   for (let month = 0; month <= 12; month++) {
     const daysBack = month * 30;
-    // Stop after we've collected 365 days
     if (daysBack >= 365) break;
-    
-    // Clamp the final window to not exceed 365 total days
+
     const windowDays = Math.min(30, 365 - daysBack);
     const end = new Date(now.getTime() - daysBack * 86_400_000);
     const start = new Date(end.getTime() - windowDays * 86_400_000);
@@ -118,7 +115,7 @@ async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
       const variables = { q: query, first: 100, after: cursor };
       const result = await gql<{
         search: { issueCount: number; pageInfo: { hasNextPage: boolean; endCursor: string | null }; nodes: unknown[] };
-        rateLimit: { remaining: number; reset: number };
+        rateLimit: { remaining: number; resetAt: string };
       }>(
         `query($q:String!,$first:Int!,$after:String){search(type:ISSUE,query:$q,first:$first,after:$after){issueCount pageInfo{hasNextPage endCursor} nodes{... on PullRequest{number title url createdAt mergedAt additions deletions changedFiles mergedBy{login} repository{nameWithOwner}}}} rateLimit{remaining resetAt}}`,
         variables,
@@ -127,12 +124,11 @@ async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
       const nodes = (result.search.nodes ?? []) as PullRequest[];
       for (const pr of nodes) {
         const key = `${pr.repository.nameWithOwner}#${pr.number}`;
-        if (!seen.has(key)) {
+        if (Date.parse(pr.mergedAt) >= since && !seen.has(key)) {
           out.push(pr);
           seen.add(key);
         }
       }
-
       hasMore = result.search.pageInfo.hasNextPage;
       cursor = result.search.pageInfo.endCursor ?? null;
       if (result.rateLimit.remaining < 200) {
@@ -142,8 +138,7 @@ async function fetchMergedPrs(now: Date): Promise<PullRequest[]> {
     }
   }
 
-  // Unique PullRequests is guaranteed but dedup by number anyway.
-  // Unique by repo+number (dedup should have already handled it)
+  // Unique by repository and PR number.
   const unique: Record<string, PullRequest> = {};
   for (const pr of out) {
     const key = `${pr.repository.nameWithOwner}#${pr.number}`;
@@ -223,7 +218,7 @@ async function fetchRecentEvents(): Promise<GhEvent[]> {
 
 async function main() {
   const now = new Date();
-  console.log(`Fetching GitHub stats for ${GH_LOGIN} at ${now.toISOString()}`);
+  console.error(`Fetching GitHub stats for ${GH_LOGIN} at ${now.toISOString()}`);
 
   const [prs, profile, recent, events] = await Promise.all([
     fetchMergedPrs(now),
@@ -232,7 +227,7 @@ async function main() {
     fetchRecentEvents(),
   ]);
 
-  console.log(`Fetched ${prs.length} merged PRs, ${recent.length} recent with titles, ${events.length} events`);
+  console.error(`Fetched ${prs.length} merged PRs, ${recent.length} recent with titles, ${events.length} events`);
 
   // Build the repos list and PR rows.
   const repos = new Map<string, number>();
@@ -265,13 +260,10 @@ async function main() {
   };
 
   const json = JSON.stringify(snapshot, null, 2);
-  console.log(`\nSnapshot size: ${json.length} bytes`);
-  console.log(`PRs: ${prRows.length}, Repos: ${repos.size}, Recent: ${recent.length}, Events: ${events.length}`);
-
-  // Write to stdout so the GitHub Action can capture it.
-  console.log("===== SNAPSHOT JSON START =====");
+  console.error(`Snapshot size: ${json.length} bytes`);
+  console.error(`PRs: ${prRows.length}, Repos: ${repos.size}, Recent: ${recent.length}, Events: ${events.length}`);
+  // stdout is the JSON asset consumed by the workflow.
   console.log(json);
-  console.log("===== SNAPSHOT JSON END =====");
 }
 
 main().catch((err) => {

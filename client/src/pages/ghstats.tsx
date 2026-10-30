@@ -304,7 +304,7 @@ function LinesChanged({ prs }: { prs: PrRow[] }) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Code Changes</h3>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <KpiCard label="Lines Added" value={added.toLocaleString()} />
         <KpiCard label="Lines Deleted" value={deleted.toLocaleString()} />
         <KpiCard label="Files Changed" value={totalFiles.toLocaleString()} />

@@ -263,7 +263,7 @@ export default function GhStats() {
 
   async function fetchStats() {
     try {
-      const response = await fetch("/api/ghstats");
+      const response = await fetch(`/api/ghstats?t=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to fetch stats");
       const json = (await response.json()) as ApiResponse;
       setData(json);

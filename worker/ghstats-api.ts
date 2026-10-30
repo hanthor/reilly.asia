@@ -7,7 +7,7 @@ export interface GhStatsEnv {
   GITHUB_TOKEN?: string;
 }
 
-const SNAPSHOT_TIMEOUT_MS = 5000;
+const SNAPSHOT_TIMEOUT_MS = 15_000;
 const EVENTS_TIMEOUT_MS = 5000;
 
 async function fetchWithTimeout(

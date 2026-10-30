@@ -28,9 +28,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Use tsx to run TypeScript directly
-          npx tsx scripts/ghstats.ts > ghstats-snapshot.json
+          npx tsx scripts/ghstats.ts > ghstats.json
           # Verify it's valid JSON
-          jq empty ghstats-snapshot.json
+          jq -e '.v == 1 and (.prs | type == "array")' ghstats.json
 
       - name: Create or update release
         env:
@@ -41,4 +41,4 @@ jobs:
             gh release create ghstats-data \
               --title "GitHub Stats Snapshot" \
               --notes "Automatically refreshed GitHub statistics."
-          gh release upload ghstats-data ghstats-snapshot.json#ghstats.json --clobber
+          gh release upload ghstats-data ghstats.json --clobber

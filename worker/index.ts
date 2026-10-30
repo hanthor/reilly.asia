@@ -136,7 +136,7 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildGhStats(env);
           return { body, ttl: GHSTATS_TTL };
-        }, "v2");
+        }, "v3");
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {
           status: 404,

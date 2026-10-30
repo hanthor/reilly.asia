@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { GhSnapshot, GhLive, GhEvent, PrRow } from "../../../shared/ghstats";
-import { cn } from "@/lib/utils";
 
 interface ApiResponse {
   snapshot: GhSnapshot | null;
@@ -17,10 +16,10 @@ function KpiCard({
   subtext?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
-      <p className="text-sm text-muted font-medium">{label}</p>
+    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
+      <p className="text-sm text-muted-foreground font-medium">{label}</p>
       <p className="text-2xl font-bold text-foreground">{value}</p>
-      {subtext && <p className="text-xs text-muted">{subtext}</p>}
+      {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
     </div>
   );
 }
@@ -35,19 +34,39 @@ function SimpleChart({
   max?: number;
 }) {
   const maxVal = max || Math.max(...data, 1);
+  const baseline = 104;
+  const plotHeight = 92;
+  const slotWidth = 1000 / Math.max(data.length, 1);
+  const barWidth = Math.min(slotWidth, Math.max(2.2, slotWidth * 0.72));
+
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="flex gap-0.5 items-end h-24">
-        {data.map((val, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-accent rounded-t-sm min-h-1"
-            style={{ height: `${(val / maxVal) * 100}%` }}
-            title={`${val}`}
-          />
-        ))}
-      </div>
+      <svg
+        className="block h-28 w-full text-accent"
+        viewBox="0 0 1000 112"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={title}
+      >
+        <line x1="0" y1={baseline} x2="1000" y2={baseline} stroke="var(--border)" />
+        {data.map((value, index) => {
+          const height = value > 0 ? Math.max((value / maxVal) * plotHeight, 1.5) : 0;
+          return (
+            <rect
+              key={index}
+              x={index * slotWidth + (slotWidth - barWidth) / 2}
+              y={baseline - height}
+              width={barWidth}
+              height={height}
+              rx="1"
+              fill="currentColor"
+            >
+              <title>{value}</title>
+            </rect>
+          );
+        })}
+      </svg>
     </div>
   );
 }
@@ -62,26 +81,34 @@ function ContributionHeatmap({
   if (!counts || counts.length === 0) return null;
 
   const weeks = Math.ceil(counts.length / 7);
+  const startDate = new Date(`${start}T00:00:00Z`);
+  const maxCount = Math.max(...counts, 1);
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Contribution Calendar</h3>
-      <div className="overflow-x-auto">
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${weeks}, 12px)` }}>
+      <div className="overflow-x-auto pb-1">
+        <div
+          className="grid gap-1"
+          style={{
+            gridTemplateColumns: `repeat(${weeks}, 12px)`,
+            gridTemplateRows: "repeat(7, 12px)",
+            gridAutoFlow: "column",
+          }}
+        >
           {counts.map((count, i) => {
-            const intensity = count === 0 ? 0 : Math.min(4, Math.ceil(count / 10));
-            const colors = [
-              "bg-surface",
-              "bg-success/30",
-              "bg-success/50",
-              "bg-success/70",
-              "bg-success",
-            ];
+            const intensity = count === 0 ? 0 : Math.max(1, Math.ceil((count / maxCount) * 4));
+            const date = new Date(startDate.getTime() + i * 86_400_000).toISOString().slice(0, 10);
+            const backgroundColor = intensity === 0
+              ? "var(--muted)"
+              : `color-mix(in srgb, var(--accent) ${intensity * 25}%, var(--card))`;
             return (
               <div
                 key={i}
-                className={cn("h-3 w-3 rounded-sm border border-border", colors[intensity])}
-                title={`${count} contributions`}
+                className="h-3 w-3 rounded-sm border border-border"
+                style={{ backgroundColor }}
+                title={`${date}: ${count} contributions`}
+                aria-label={`${date}: ${count} contributions`}
               />
             );
           })}
@@ -118,13 +145,11 @@ function TopRepos({
       <div className="space-y-2">
         {sorted.map(([repoIdx, count]) => (
           <div key={repoIdx} className="flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{repos[Number(repoIdx)]}</p>
+            <p className="min-w-0 flex-1 truncate text-sm font-medium">{repos[Number(repoIdx)]}</p>
+            <div className="h-2 w-24 shrink-0 overflow-hidden rounded bg-muted sm:w-40">
+              <div className="h-full rounded bg-accent" style={{ width: `${(count / maxCount) * 100}%` }} />
             </div>
-            <div className="flex items-center gap-2">
-              <div className="h-2 bg-accent rounded" style={{ width: `${(count / maxCount) * 100}px` }} />
-              <span className="text-sm text-muted w-8 text-right">{count}</span>
-            </div>
+            <span className="w-10 shrink-0 text-right text-sm text-muted-foreground">{count}</span>
           </div>
         ))}
       </div>
@@ -157,9 +182,9 @@ function TimeToMerge({ prs }: { prs: PrRow[] }) {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Time to Merge</h3>
       <div className="grid grid-cols-3 gap-4 text-sm">
-        <KpiCard label="Median (days)" value={Math.round(median * 10) / 10} />
-        <KpiCard label="P90 (days)" value={Math.round(p90 * 10) / 10} />
-        <KpiCard label="Average (days)" value={Math.round(avg * 10) / 10} />
+        <KpiCard label="Median (days)" value={median.toFixed(1)} />
+        <KpiCard label="P90 (days)" value={p90.toFixed(1)} />
+        <KpiCard label="Average (days)" value={avg.toFixed(1)} />
       </div>
       <SimpleChart
         title="Distribution"
@@ -197,7 +222,7 @@ function Punchcard({ prs }: { prs: PrRow[] }) {
               {Array(24)
                 .fill(0)
                 .map((_, h) => (
-                  <div key={h} className="w-4 text-center text-xs text-muted">
+                  <div key={h} className="w-4 text-center text-xs text-muted-foreground">
                     {h % 6 === 0 ? h : ""}
                   </div>
                 ))}
@@ -208,19 +233,17 @@ function Punchcard({ prs }: { prs: PrRow[] }) {
               <div className="w-12 text-xs font-medium flex items-center">{dayLabels[dow]}</div>
               <div className="flex gap-1">
                 {row.map((count, hour) => {
-                  const intensity = count === 0 ? 0 : Math.min(4, Math.ceil((count / maxVal) * 4));
-                  const colors = [
-                    "bg-surface",
-                    "bg-success/30",
-                    "bg-success/50",
-                    "bg-success/70",
-                    "bg-success",
-                  ];
+                  const intensity = count === 0 ? 0 : Math.max(1, Math.ceil((count / maxVal) * 4));
+                  const backgroundColor = intensity === 0
+                    ? "var(--muted)"
+                    : `color-mix(in srgb, var(--accent) ${intensity * 25}%, var(--card))`;
                   return (
                     <div
                       key={hour}
-                      className={cn("w-4 h-4 rounded-sm border border-border", colors[intensity])}
+                      className="h-4 w-4 rounded-sm border border-border"
+                      style={{ backgroundColor }}
                       title={`${dayLabels[dow]} ${hour}:00 UTC: ${count} merges`}
+                      aria-label={`${dayLabels[dow]} ${hour}:00 UTC: ${count} merges`}
                     />
                   );
                 })}
@@ -278,7 +301,7 @@ export default function GhStats() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted">Loading stats...</p>
+        <p className="text-muted-foreground">Loading stats...</p>
       </div>
     );
   }
@@ -291,7 +314,7 @@ export default function GhStats() {
     return (
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-8">GitHub Stats</h1>
-        <div className="rounded-lg border border-warning bg-warning/10 p-4 text-warning">
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive">
           <p>Failed to load stats: {error || "No data available"}</p>
         </div>
       </div>
@@ -302,9 +325,9 @@ export default function GhStats() {
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">GitHub Stats</h1>
-        <p className="text-muted text-sm">
+        <p className="text-muted-foreground text-sm">
           Last updated: {generatedAt}
-          {error && <span className="text-warning ml-2">({error})</span>}
+          {error && <span className="text-destructive ml-2">({error})</span>}
         </p>
       </div>
 
@@ -356,18 +379,18 @@ export default function GhStats() {
                   href={merge.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex gap-3 rounded-lg border border-border bg-surface p-3 text-sm hover:bg-surface/80 transition-colors"
+                  className="flex gap-3 rounded-lg border border-border bg-card p-3 text-sm hover:bg-accent/10 transition-colors"
                 >
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
                     ✓
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{merge.title}</p>
-                    <p className="text-muted text-xs truncate">
+                    <p className="text-muted-foreground text-xs truncate">
                       {merge.repo} #{merge.number}
                     </p>
                   </div>
-                  <p className="text-muted text-xs flex-shrink-0">
+                  <p className="text-muted-foreground text-xs flex-shrink-0">
                     {new Date(merge.mergedAt).toLocaleDateString()}
                   </p>
                 </a>
@@ -387,18 +410,18 @@ export default function GhStats() {
                   href={event.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex gap-3 rounded-lg border border-border bg-surface p-3 text-sm hover:bg-surface/80 transition-colors"
+                  className="flex gap-3 rounded-lg border border-border bg-card p-3 text-sm hover:bg-muted transition-colors"
                 >
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-xs">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs" style={{ backgroundColor: "color-mix(in srgb, var(--accent) 16%, var(--card))" }}>
                     📦
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{event.verb}</p>
-                    <p className="text-muted text-xs truncate">
+                    <p className="text-muted-foreground text-xs truncate">
                       {event.subject ? `${event.subject} in ` : ""}{event.repo}
                     </p>
                   </div>
-                  <p className="text-muted text-xs flex-shrink-0">
+                  <p className="text-muted-foreground text-xs flex-shrink-0">
                     {new Date(event.at).toLocaleTimeString()}
                   </p>
                 </a>

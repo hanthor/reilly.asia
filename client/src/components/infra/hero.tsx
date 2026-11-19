@@ -13,8 +13,8 @@ const FACT_CELL = [
 ];
 
 const FACTS = [
-  { value: "8", label: "machines that configure themselves" },
-  { value: "2", label: "Talos Kubernetes clusters" },
+  { value: "10", label: "machines that configure themselves" },
+  { value: "4", label: "Hives, failing over between two home servers" },
   { value: "0", label: "secrets in a public repo" },
   { value: "≤24h", label: "from merge to every machine" },
 ];
@@ -111,8 +111,8 @@ export function InfraHero() {
             Infrastructure that <span className="text-[color:var(--ix-teal)]">maintains itself</span>.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[color:var(--ix-muted)] sm:text-xl">
-            My laptops, phone and Raspberry Pi, plus the Kubernetes cluster I run for TunaOS on AWS, all declared in
-            one public repo. Every machine re-applies it daily. Bots ship the routine changes, and only real decisions
+            My laptops and phone, two home servers and the VPS that fronts them, all declared in one public
+            repo. Every machine re-applies it daily. Bots ship the routine changes, and only real decisions
             reach a human.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

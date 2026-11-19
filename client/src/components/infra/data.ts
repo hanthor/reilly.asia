@@ -1,5 +1,5 @@
-// Static content for /infra, written from hanthor/dotfiles (inventory.yml
-// names/groups, host READMEs, docs/src/automation.md). Architecture only:
+// Static content for /infra, written from hanthor/dotfiles (docs/src/fleet.md,
+// host pages, docs/src/automation.md). Last synced 2026-11-19. Architecture only:
 // no addresses, ports, instance IDs or allowlists belong in this file.
 
 export const HANDBOOK = "/infra/handbook/";
@@ -48,9 +48,9 @@ export const FLEET: HostGroup[] = [
       {
         name: "kanpur",
         kind: "Laptop",
-        role: "Portable workstation.",
+        role: "Portable workstation, also used as a Windows test machine.",
         tags: ["x86_64", "Bluefin"],
-        state: "active",
+        state: "offline",
         href: handbook("desktop/kanpur/index.html"),
       },
       {
@@ -74,35 +74,35 @@ export const FLEET: HostGroup[] = [
         kind: "Phone VM",
         role: "Debian VM on the phone (Android Virtualization Framework), kept to a CLI-only profile.",
         tags: ["aarch64", "Debian", "cli-only"],
-        state: "active",
+        state: "offline",
       },
     ],
   },
   {
     id: "servers",
-    title: "Servers & phone",
-    blurb: "Headless machines, plus the raw Android layer of the phone.",
+    title: "Agent box, Pi & phone",
+    blurb: "Headless machines that apply the repo themselves, plus the raw Android layer of the phone.",
     hosts: [
       {
-        name: "goa",
-        kind: "Raspberry Pi 5",
-        role: "Ansible control node. Runs fleet-wide applies, health checks and the LAN inventory.",
-        tags: ["aarch64", "Debian 13"],
-        state: "active",
-        href: handbook("servers/goa/index.html"),
-      },
-      {
         name: "punjab",
-        kind: "AWS EC2",
-        role: "Headless agent box in the TunaOS AWS account. Runs the OpenTofu config for that account.",
-        tags: ["x86_64", "Ubuntu 24.04"],
+        kind: "VM on karnataka",
+        role: "Headless agent box where the coding agents work. A KubeVirt VM on karnataka since the AWS instance was shut down.",
+        tags: ["x86_64", "Ubuntu 24.04", "KubeVirt"],
         state: "active",
         href: handbook("servers/punjab/index.html"),
       },
       {
+        name: "goa",
+        kind: "Raspberry Pi 5",
+        role: "Former control node for fleet-wide health checks and the LAN inventory. Currently powered off.",
+        tags: ["aarch64", "Debian 13"],
+        state: "offline",
+        href: handbook("servers/goa/index.html"),
+      },
+      {
         name: "termux",
         kind: "Android",
-        role: "The phone's Termux layer. No root and no systemd, so it has its own package role.",
+        role: "The phone's Termux layer. No root and no systemd, so it has its own package unit.",
         tags: ["aarch64", "Termux"],
         state: "active",
       },
@@ -110,80 +110,64 @@ export const FLEET: HostGroup[] = [
   },
 ];
 
-// Talos nodes are not Ansible-managed (no SSH), so they publish no facts;
-// these specs come from the cluster handbooks. No addresses or instance IDs.
+// Server hosts that do not publish device facts; these specs come from the
+// handbook pages. No addresses or instance IDs.
 export const CLUSTER_NODES: HostGroup[] = [
   {
-    id: "tunaos-nodes",
-    title: "TunaOS cluster nodes",
-    blurb: "Two EC2 nodes in eu-north-1, both in OpenTofu. The control plane is untainted, so it runs workloads too.",
+    id: "home-servers",
+    title: "Home servers",
+    blurb: "Two Bluefin boxes, each with its own single-node k3s. bihar runs the Hives; karnataka holds VMs and is their cold standby.",
     hosts: [
       {
-        name: "control-plane",
-        slug: "tunaos-control-plane",
-        kind: "AWS EC2 · control plane",
-        role: "etcd and the Kubernetes API, plus the Hive, whose data volume is bound to this node.",
-        tags: ["Talos", "x86_64", "eu-north-1"],
+        name: "bihar",
+        kind: "Hive host · KubeStellar hub",
+        role: "Runs the Hive containers that spindle fronts, and the KubeStellar hub that places workloads on karnataka.",
+        tags: ["Bluefin", "k3s", "x86_64"],
         state: "active",
-        href: handbook("servers/aws-k8s/cluster.html#nodes"),
+        href: handbook("servers/bihar.html"),
         specs: [
-          ["Model", "Amazon EC2 m6i.2xlarge"],
-          ["CPU", "8 vCPU · Intel Xeon"],
-          ["Memory", "32 GB"],
-          ["OS", "Talos Linux v1.13.9"],
-          ["K8s", "v1.36.2"],
+          ["Model", "ASRock B660M-STX · Intel"],
+          ["CPU", "24 threads"],
+          ["Memory", "62 GB"],
+          ["OS", "Bluefin utah (bootc)"],
+          ["Runs", "Hives · k3s · KubeStellar"],
         ],
       },
       {
-        name: "worker",
-        slug: "tunaos-worker",
-        kind: "AWS EC2 · worker",
-        role: "Matrix/ESS and the Traefik ingress that public DNS points at.",
-        tags: ["Talos", "x86_64", "eu-north-1"],
+        name: "karnataka",
+        kind: "VMs · runners · Hive standby",
+        role: "KubeVirt VMs (punjab and test VMs), GitHub Actions runners, Frappe LMS and Lemonade on the GPU. Takes over the Hives if bihar goes down.",
+        tags: ["Bluefin", "k3s", "AMD GPU"],
         state: "active",
-        href: handbook("servers/aws-k8s/cluster.html#nodes"),
+        href: handbook("servers/karnataka.html"),
         specs: [
-          ["Model", "Amazon EC2 m6i.xlarge"],
-          ["CPU", "4 vCPU · Intel Xeon"],
-          ["Memory", "16 GB"],
-          ["OS", "Talos Linux v1.13.9"],
-          ["K8s", "v1.36.2"],
+          ["Model", "Framework · Strix Halo"],
+          ["CPU", "AMD Ryzen AI MAX+ 395 · 32 threads"],
+          ["Memory", "125 GB unified"],
+          ["GPU", "AMD Radeon 8060S"],
+          ["OS", "Bluefin utah (bootc)"],
         ],
       },
     ],
   },
   {
-    id: "home-cluster",
-    title: "Home Talos cluster",
-    blurb: "Two-node Kubernetes cluster on the LAN. Powered down and in storage for now; it is expected back.",
+    id: "vps",
+    title: "Public front door",
+    blurb: "The one machine on the public internet. Everything public enters here and crosses the tailnet home.",
     hosts: [
       {
-        name: "bihar",
-        kind: "Control plane",
-        role: "Intel node that runs the Talos control plane.",
-        tags: ["Talos", "x86_64"],
-        state: "offline",
-        href: handbook("servers/talos-k8s/bihar/index.html"),
+        name: "spindle",
+        kind: "Oracle Cloud VPS · Frankfurt",
+        role: "Caddy for every public name, the Matrix homeserver and LiveKit calls. It also holds the lease that decides which home server runs the Hives.",
+        tags: ["Ubuntu 24.04", "aarch64", "Always Free"],
+        state: "active",
+        href: handbook("servers/spindle-vps/index.html"),
         specs: [
-          ["Model", "ASRock board · Intel CPU"],
-          ["OS", "Talos Linux v1.13.2"],
-          ["K8s", "v1.36.1"],
-        ],
-      },
-      {
-        name: "karnataka",
-        kind: "Worker",
-        role: "AMD Strix Halo APU, with the GPU exposed to Kubernetes for local AI inference.",
-        tags: ["Talos", "AMD GPU"],
-        state: "offline",
-        href: handbook("servers/talos-k8s/karnataka/index.html"),
-        specs: [
-          ["Model", "Framework · Strix Halo"],
-          ["CPU", "AMD Ryzen AI MAX+ 395 · 32 threads"],
-          ["Memory", "62 GB unified"],
-          ["GPU", "AMD Radeon 8060S"],
-          ["OS", "Talos Linux v1.13.2"],
-          ["K8s", "v1.36.1"],
+          ["Model", "Oracle VM.Standard.A1.Flex"],
+          ["CPU", "2 OCPU · Ampere Altra"],
+          ["Memory", "12 GB"],
+          ["OS", "Ubuntu 24.04"],
+          ["Runs", "Caddy · Matrix · LiveKit"],
         ],
       },
     ],
@@ -191,7 +175,7 @@ export const CLUSTER_NODES: HostGroup[] = [
 ];
 
 export const RETIRED_NOTE =
-  "matrix and telengana, two Hetzner VPSes, were retired in 2026 once the AWS cluster took over their workloads.";
+  "Retired in 2026: the TunaOS Talos cluster and the punjab instance on AWS (shut down in October), the home Talos cluster (rebuilt as Bluefin + k3s on the same hardware), and the Hetzner VPSes matrix and telengana.";
 
 export interface Mechanism {
   title: string;
@@ -211,9 +195,9 @@ export const MECHANISMS: Mechanism[] = [
     href: handbook("automation.html"),
   },
   {
-    title: "Daily Hive upgrades",
-    body: "Each day the Hives move to upstream's latest release. The canary goes first, then a soak, and a failure means rollback plus blocklist.",
-    href: handbook("automation.html"),
+    title: "Hive failover",
+    body: "spindle holds a lease naming the home server that runs the Hives. If bihar stays unhealthy for five minutes, karnataka starts from a copy synced every 15 minutes.",
+    href: handbook("servers/hives.html"),
   },
   {
     title: "Discord digest",
@@ -232,13 +216,13 @@ export interface StackItem {
 
 export const STACK: StackItem[] = [
   {
-    name: "Ansible",
-    what: "One playbook for every machine. Each host pulls master and converges itself, with no central push.",
+    name: "just + native units",
+    what: "One repo for every machine. Each host pulls master and runs its Bash units through just and mise; chezmoi handles the dotfiles. No central push.",
     href: handbook("architecture.html"),
   },
   {
     name: "Tailscale",
-    what: "A WireGuard mesh with MagicDNS names across laptops, the phone, the Pi, AWS and in-cluster ingress.",
+    what: "A WireGuard mesh with MagicDNS names across laptops, the phone, the home servers and the VPS. Public traffic reaches home over it.",
     href: handbook("network.html"),
   },
   {
@@ -247,18 +231,18 @@ export const STACK: StackItem[] = [
     href: handbook("bitwarden.html"),
   },
   {
-    name: "OpenTofu",
-    what: "The whole AWS account is code. A plan against it should always read “No changes”.",
-    href: handbook("servers/aws/index.html"),
+    name: "Bluefin + bootc",
+    what: "The home servers run Bluefin as a bootable container image: read-only /usr, atomic updates and rollback.",
+    href: handbook("servers/bihar.html"),
   },
   {
-    name: "Talos + Kubernetes",
-    what: "An immutable, API-only OS with no SSH and no package manager, running two clusters.",
-    href: handbook("servers/aws-k8s/cluster.html"),
+    name: "k3s + KubeVirt",
+    what: "A single-node k3s on each home server. KubeVirt runs the agent box and test VMs; KubeStellar on bihar places workloads.",
+    href: handbook("servers/home-k3s.html"),
   },
   {
     name: "Cloudflare",
-    what: "DNS and proxying, plus the Worker that serves this page, the handbook and the live checks.",
+    what: "DNS and proxying in front of spindle, plus the Worker that serves this page, the handbook and the live checks.",
     href: "https://github.com/hanthor/reilly.asia",
   },
   {

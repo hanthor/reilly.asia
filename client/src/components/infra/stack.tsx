@@ -3,11 +3,11 @@ import { STACK } from "./data";
 import { Section } from "./section";
 
 const ICONS = {
-  Ansible: Terminal,
+  "just + native units": Terminal,
   Tailscale: Network,
   Bitwarden: KeyRound,
-  OpenTofu: FileCode2,
-  "Talos + Kubernetes": Container,
+  "Bluefin + bootc": FileCode2,
+  "k3s + KubeVirt": Container,
   Cloudflare: Cloud,
   "GitHub Actions": GitBranch,
   Hive: Bot,

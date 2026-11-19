@@ -6,7 +6,7 @@
 // The files are written by the machines themselves, so treat every field as
 // untrusted: optional, possibly empty, numbers possibly sent as strings.
 
-/** Ansible-managed hosts that publish facts. Matches the fleet on the page. */
+/** Hosts that publish facts. Matches the fleet on the page. */
 export const FACT_HOSTS = ["himachal", "kanpur", "dilli", "kerala", "mumbai", "goa", "punjab", "termux"] as const;
 export type FactHost = (typeof FACT_HOSTS)[number];
 

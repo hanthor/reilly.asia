@@ -119,7 +119,7 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildGhStats(env, "org");
           return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
-        }, "v3-org");
+        }, "v4-org");
       }
       if (/\.[a-z0-9]+$/i.test(url.pathname)) return env.ASSETS.fetch(request);
       return landing(request, env);
@@ -153,7 +153,7 @@ export default {
         return cachedJson(request, ctx, async () => {
           const body = await buildGhStats(env, scope);
           return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
-        }, scope === "org" ? "v3-org" : "v3");
+        }, scope === "org" ? "v4-org" : "v4");
       }
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {

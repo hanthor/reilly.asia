@@ -50,7 +50,7 @@ export async function getLiveEvents(
   scope: GhScope = "user",
 ): Promise<GhEvent[] | null> {
   const url = scope === "org"
-    ? `https://api.github.com/orgs/${GH_ORG}/events?per_page=60`
+    ? `https://api.github.com/orgs/${GH_ORG}/events?per_page=30`
     : `https://api.github.com/users/${GH_LOGIN}/events/public?per_page=30`;
   const headers = apiHeaders(env);
   const res = await fetchWithTimeout(url, { headers }, EVENTS_TIMEOUT_MS);
@@ -79,7 +79,9 @@ export async function buildGhStats(env: GhStatsEnv, scope: GhScope = "user"): Pr
         since: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         merged: null,
         truncated: false,
-        events: events,
+        // Anonymous API calls from Cloudflare's shared IPs are often rate-limited:
+        // fall back to the events the snapshot recorded.
+        events: events ?? snapshot.events ?? null,
       }
     : null;
 

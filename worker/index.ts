@@ -33,6 +33,7 @@ const ACTIVITY_TTL = 3600;
 const ACTIVITY_EMPTY_TTL = 300;
 const FLEET_TTL = 600;
 const GHSTATS_TTL = 900; // 15 minutes
+const GHSTATS_EMPTY_TTL = 60; // snapshot missing or GitHub slow: retry soon
 const FLEET_EMPTY_TTL = 60;
 
 function methodNotAllowed(): Response {
@@ -115,7 +116,10 @@ export default {
     if (canonical) return Response.redirect(canonical, 301);
     if (url.hostname === STATS_HOST) {
       if (url.pathname === "/api/ghstats") {
-        return cachedJson(request, ctx, async () => ({ body: await buildGhStats(env, "org"), ttl: GHSTATS_TTL }), "v3-org");
+        return cachedJson(request, ctx, async () => {
+          const body = await buildGhStats(env, "org");
+          return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
+        }, "v3-org");
       }
       if (/\.[a-z0-9]+$/i.test(url.pathname)) return env.ASSETS.fetch(request);
       return landing(request, env);
@@ -148,7 +152,7 @@ export default {
         const scope = parseScope(url.searchParams.get("scope"));
         return cachedJson(request, ctx, async () => {
           const body = await buildGhStats(env, scope);
-          return { body, ttl: GHSTATS_TTL };
+          return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
         }, scope === "org" ? "v3-org" : "v3");
       }
       case "api-not-found":

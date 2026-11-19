@@ -1,5 +1,6 @@
 import { useEffect, useState, type KeyboardEvent, type PointerEvent } from "react";
-import type { GhSnapshot, GhLive, GhEvent, PrRow } from "../../../shared/ghstats";
+import type { GhSnapshot, GhLive, GhEvent, GhScope, PrRow } from "../../../shared/ghstats";
+import { GH_LOGIN, GH_ORG, STATS_HOST, isBotLogin, parseScope } from "../../../shared/ghstats";
 
 interface ApiResponse {
   snapshot: GhSnapshot | null;
@@ -342,6 +343,70 @@ function TopRepos({
   );
 }
 
+function TopAuthors({ authors, prAuthors }: { authors: string[]; prAuthors: number[] }) {
+  const counts = new Map<number, number>();
+  for (const a of prAuthors) counts.set(a, (counts.get(a) ?? 0) + 1);
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  if (sorted.length === 0) return null;
+  const maxCount = sorted[0][1];
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Top Contributors</h3>
+      <div className="space-y-2">
+        {sorted.map(([idx, count]) => {
+          const login = authors[idx] ?? "ghost";
+          const bot = isBotLogin(login);
+          return (
+            <div key={idx} className="flex items-center gap-3">
+              <a
+                href={`https://github.com/${login.replace(/\[bot\]$/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-w-0 flex-1 truncate text-sm font-medium hover:underline"
+              >
+                {login}
+                {bot && <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">bot</span>}
+              </a>
+              <div className="h-2 w-24 shrink-0 overflow-hidden rounded bg-muted sm:w-40">
+                <div className="h-full rounded bg-accent" style={{ width: `${(count / maxCount) * 100}%` }} />
+              </div>
+              <span className="w-12 shrink-0 text-right text-sm text-muted-foreground">{count.toLocaleString()}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/** Which stats this page shows: always the org on stats.tunaos.org, else ?scope=. */
+function currentScope(): { scope: GhScope; standalone: boolean } {
+  if (typeof window === "undefined") return { scope: "user", standalone: false };
+  if (window.location.hostname === STATS_HOST) return { scope: "org", standalone: true };
+  return { scope: parseScope(new URLSearchParams(window.location.search).get("scope")), standalone: false };
+}
+
+function ScopeTabs({ scope }: { scope: GhScope }) {
+  const tab = (value: GhScope, label: string) => (
+    <a
+      href={value === "org" ? "/ghstats?scope=org" : "/ghstats"}
+      aria-current={scope === value ? "page" : undefined}
+      className={
+        "rounded-md px-3 py-1.5 text-sm font-medium transition-colors " +
+        (scope === value ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground")
+      }
+    >
+      {label}
+    </a>
+  );
+  return (
+    <nav aria-label="Stats scope" className="mb-4 inline-flex gap-1 rounded-lg border border-border bg-card p-1">
+      {tab("user", `@${GH_LOGIN}`)}
+      {tab("org", `${GH_ORG} org`)}
+    </nav>
+  );
+}
+
 function TimeToMerge({ prs }: { prs: PrRow[] }) {
   const ttms = prs
     .map((pr) => (pr[3] - pr[2]) / 86_400) // mergedAt - createdAt in days
@@ -482,9 +547,14 @@ function LinesChanged({
 }
 
 export default function GhStats() {
+  const [{ scope, standalone }] = useState(currentScope);
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    document.title = scope === "org" ? `${GH_ORG} on GitHub` : "GitHub Stats · James Reilly";
+  }, [scope]);
 
   useEffect(() => {
     fetchStats();
@@ -494,7 +564,7 @@ export default function GhStats() {
 
   async function fetchStats() {
     try {
-      const response = await fetch(`/api/ghstats?t=${Date.now()}`, { cache: "no-store" });
+      const response = await fetch(`/api/ghstats?scope=${scope}&t=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to fetch stats");
       const json = (await response.json()) as ApiResponse;
       setData(json);
@@ -521,7 +591,7 @@ export default function GhStats() {
   if (!snapshot) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8">GitHub Stats</h1>
+        <h1 className="text-4xl font-bold mb-8">{scope === "org" ? `${GH_ORG} on GitHub` : "GitHub Stats"}</h1>
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive">
           <p>Failed to load stats: {error || "No data available"}</p>
         </div>
@@ -536,11 +606,35 @@ export default function GhStats() {
   const created = createdPrs === undefined ? null : sumByDay(days, createdPrs, (createdAt) => createdAt);
   const added = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[4]);
   const deleted = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[5]);
+  const isOrg = scope === "org" && snapshot.scope === "org";
+  const authors = snapshot.authors ?? [];
+  const prAuthors = snapshot.prAuthors ?? [];
+  const botMerged = prAuthors.filter((a) => isBotLogin(authors[a] ?? "")).length;
+  const humanContributors = new Set(prAuthors.filter((a) => !isBotLogin(authors[a] ?? ""))).size;
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">GitHub Stats</h1>
+        {!standalone && <ScopeTabs scope={scope} />}
+        <h1 className="text-4xl font-bold mb-2">{isOrg ? `${GH_ORG} on GitHub` : "GitHub Stats"}</h1>
+        {isOrg && (
+          <p className="mb-2 text-muted-foreground">
+            Every public pull request in the{" "}
+            <a href={`https://github.com/${GH_ORG}`} className="underline underline-offset-4" target="_blank" rel="noopener noreferrer">
+              {GH_ORG}
+            </a>{" "}
+            organization over the last year, by humans and by the Hive agents.
+            {standalone && (
+              <>
+                {" "}
+                <a href="https://reilly.asia/ghstats" className="underline underline-offset-4">
+                  @{GH_LOGIN}'s own stats
+                </a>
+                .
+              </>
+            )}
+          </p>
+        )}
         <p className="text-muted-foreground text-sm">
           Last updated: {generatedAt}
           {error && <span className="text-destructive ml-2">({error})</span>}
@@ -552,13 +646,27 @@ export default function GhStats() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <KpiCard
             label="PRs Created (365d)"
-            value={createdPrs?.length ?? "—"}
+            value={createdPrs?.length.toLocaleString() ?? "—"}
             subtext={createdPrs === undefined ? "Waiting for the next snapshot" : undefined}
           />
-          <KpiCard label="PRs Merged (365d)" value={snapshot.prs.length} />
-          <KpiCard label="Contributions" value={snapshot.totals?.prs || 0} />
-          <KpiCard label="Code Review" value={snapshot.totals?.reviews || 0} />
-          <KpiCard label="Followers" value={snapshot.profile.followers} />
+          <KpiCard label="PRs Merged (365d)" value={snapshot.prs.length.toLocaleString()} />
+          {isOrg ? (
+            <>
+              <KpiCard label="Human Contributors" value={humanContributors} subtext={`${authors.length} authors incl. bots`} />
+              <KpiCard
+                label="Merged from Bots/Agents"
+                value={snapshot.prs.length ? `${Math.round((botMerged / snapshot.prs.length) * 100)}%` : "—"}
+                subtext={`${botMerged.toLocaleString()} PRs`}
+              />
+              <KpiCard label="Active Repos" value={snapshot.repos.length} subtext={`of ${snapshot.profile.publicRepos} public`} />
+            </>
+          ) : (
+            <>
+              <KpiCard label="Contributions" value={snapshot.totals?.prs || 0} />
+              <KpiCard label="Code Review" value={snapshot.totals?.reviews || 0} />
+              <KpiCard label="Followers" value={snapshot.profile.followers} />
+            </>
+          )}
         </div>
 
         {created === null && (
@@ -597,6 +705,8 @@ export default function GhStats() {
         {/* Top Repos */}
         {snapshot.repos && <TopRepos repos={snapshot.repos} prs={snapshot.prs} />}
 
+        {isOrg && <TopAuthors authors={authors} prAuthors={prAuthors} />}
+
         {/* Time to Merge */}
         <TimeToMerge prs={snapshot.prs} />
 
@@ -626,6 +736,7 @@ export default function GhStats() {
                     <p className="font-medium text-foreground truncate">{merge.title}</p>
                     <p className="text-muted-foreground text-xs truncate">
                       {merge.repo} #{merge.number}
+                      {isOrg && merge.author ? ` · ${merge.author}` : ""}
                     </p>
                   </div>
                   <p className="text-muted-foreground text-xs flex-shrink-0">

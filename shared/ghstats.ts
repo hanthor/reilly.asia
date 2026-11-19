@@ -9,20 +9,47 @@
 // Action runs scripts/ghstats.ts directly with Node's type stripping.
 
 export const GH_LOGIN = "hanthor";
+/** The org whose stats stats.tunaos.org and /ghstats?scope=org show. */
+export const GH_ORG = "tuna-os";
+export const STATS_HOST = "stats.tunaos.org";
 export const SNAPSHOT_RELEASE_TAG = "ghstats-data";
 export const SNAPSHOT_ASSET = "ghstats.json";
-export const SNAPSHOT_URL = `https://github.com/hanthor/reilly.asia/releases/download/${SNAPSHOT_RELEASE_TAG}/${SNAPSHOT_ASSET}`;
+export const ORG_SNAPSHOT_ASSET = "ghstats-org.json";
+const RELEASE_BASE = `https://github.com/hanthor/reilly.asia/releases/download/${SNAPSHOT_RELEASE_TAG}/`;
+export const SNAPSHOT_URL = RELEASE_BASE + SNAPSHOT_ASSET;
+export const ORG_SNAPSHOT_URL = RELEASE_BASE + ORG_SNAPSHOT_ASSET;
+
+/** "user" = hanthor's own PRs anywhere; "org" = every author's PRs in tuna-os. */
+export type GhScope = "user" | "org";
+
+export function parseScope(raw: string | null | undefined): GhScope {
+  return raw === "org" ? "org" : "user";
+}
+
+/** Search qualifier selecting the scope's PRs. */
+export function scopeQualifier(scope: GhScope): string {
+  return scope === "org" ? `org:${GH_ORG}` : `author:${GH_LOGIN}`;
+}
 
 /** Only public PRs: the snapshot and the live overlay both filter on this. */
-export const MERGED_PR_QUERY = `author:${GH_LOGIN} is:pr is:merged is:public`;
-/** All public PRs authored by the user, including open and closed-unmerged PRs. */
-export const CREATED_PR_QUERY = `author:${GH_LOGIN} is:pr is:public`;
+export const mergedPrQuery = (scope: GhScope) => `${scopeQualifier(scope)} is:pr is:merged is:public`;
+/** All public PRs in the scope, including open and closed-unmerged PRs. */
+export const createdPrQuery = (scope: GhScope) => `${scopeQualifier(scope)} is:pr is:public`;
+export const MERGED_PR_QUERY = mergedPrQuery("user");
+export const CREATED_PR_QUERY = createdPrQuery("user");
+
+/** Bot accounts: GitHub Apps end in [bot]; a few automation users do not. */
+export function isBotLogin(login: string): boolean {
+  return /\[bot\]$/.test(login) || /^(renovate|dependabot|github-actions)(-|$)/i.test(login);
+}
 
 /** One merged PR: [repo index, number, createdAt s, mergedAt s, additions, deletions, changed files, merged by author 1/0]. */
 export type PrRow = [number, number, number, number, number, number, number, number];
 
 export interface RecentMerge {
   repo: string;
+  /** Org snapshots only. */
+  author?: string;
   number: number;
   title: string;
   url: string;
@@ -43,7 +70,10 @@ export interface GhEvent {
 
 export interface GhSnapshot {
   v: 1;
+  /** User login, or the org name for an org snapshot. */
   login: string;
+  /** Absent on snapshots written before org support: treat as "user". */
+  scope?: GhScope;
   generatedAt: string;
   /** When every PR was last refetched; runs in between only add new merges. */
   fullAt: string;
@@ -58,6 +88,10 @@ export interface GhSnapshot {
   createdPrs?: number[];
   /** The newest merges, with titles, newest first. */
   recent: RecentMerge[];
+  /** Org snapshots: PR author logins, indexed by prAuthors / createdAuthors. */
+  authors?: string[];
+  /** Org snapshots: author index for each row of prs. */
+  prAuthors?: number[];
   events: GhEvent[];
 }
 
@@ -102,10 +136,11 @@ export function mergeFromSearchItem(raw: unknown): RecentMerge | null {
   const createdAt = str(item?.created_at);
   if (!item || !mergedAt || !repoUrl || !url || !createdAt || typeof item.number !== "number") return null;
   const repo = repoUrl.replace(/^https:\/\/api\.github\.com\/repos\//, "");
-  return { repo, number: item.number, title: str(item.title) ?? `#${item.number}`, url, createdAt, mergedAt };
+  const author = str(obj(item.user)?.login) ?? undefined;
+  return { repo, number: item.number, title: str(item.title) ?? `#${item.number}`, url, createdAt, mergedAt, ...(author ? { author } : {}) };
 }
 
-/** A public event from /users/:login/events/public → GhEvent, or null for noise (labels, stars of own repos…). */
+/** A public event from /users/:login/events/public or /orgs/:org/events → GhEvent, or null for noise (labels, stars of own repos…). */
 export function normalizeEvent(raw: unknown): GhEvent | null {
   const e = obj(raw);
   const repo = str(obj(e?.repo)?.name);

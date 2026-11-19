@@ -1,7 +1,7 @@
 // /api/ghstats - GitHub stats snapshot and live data
 
-import type { GhSnapshot, GhLive, GhEvent } from "../shared/ghstats";
-import { GH_LOGIN, SNAPSHOT_URL, normalizeEvent, normalizeEvents } from "../shared/ghstats";
+import type { GhSnapshot, GhLive, GhEvent, GhScope } from "../shared/ghstats";
+import { GH_LOGIN, GH_ORG, ORG_SNAPSHOT_URL, SNAPSHOT_URL, normalizeEvents } from "../shared/ghstats";
 
 export interface GhStatsEnv {
   GITHUB_TOKEN?: string;
@@ -33,8 +33,8 @@ function apiHeaders(env: GhStatsEnv): Record<string, string> {
 }
 
 /** Fetch the snapshot JSON from GitHub releases. */
-export async function getSnapshot(env: GhStatsEnv): Promise<GhSnapshot | null> {
-  const res = await fetchWithTimeout(SNAPSHOT_URL, {}, SNAPSHOT_TIMEOUT_MS);
+export async function getSnapshot(env: GhStatsEnv, scope: GhScope = "user"): Promise<GhSnapshot | null> {
+  const res = await fetchWithTimeout(scope === "org" ? ORG_SNAPSHOT_URL : SNAPSHOT_URL, {}, SNAPSHOT_TIMEOUT_MS);
   if (!res?.ok) return null;
   try {
     return (await res.json()) as GhSnapshot;
@@ -47,8 +47,11 @@ export async function getSnapshot(env: GhStatsEnv): Promise<GhSnapshot | null> {
 export async function getLiveEvents(
   env: GhStatsEnv,
   since: Date,
+  scope: GhScope = "user",
 ): Promise<GhEvent[] | null> {
-  const url = `https://api.github.com/users/${GH_LOGIN}/events/public?per_page=30`;
+  const url = scope === "org"
+    ? `https://api.github.com/orgs/${GH_ORG}/events?per_page=60`
+    : `https://api.github.com/users/${GH_LOGIN}/events/public?per_page=30`;
   const headers = apiHeaders(env);
   const res = await fetchWithTimeout(url, { headers }, EVENTS_TIMEOUT_MS);
   if (!res?.ok) return null;
@@ -61,13 +64,13 @@ export async function getLiveEvents(
 }
 
 /** Serve ghstats snapshot and live data. */
-export async function buildGhStats(env: GhStatsEnv): Promise<{
+export async function buildGhStats(env: GhStatsEnv, scope: GhScope = "user"): Promise<{
   snapshot: GhSnapshot | null;
   live: GhLive | null;
 }> {
   const [snapshot, events] = await Promise.all([
-    getSnapshot(env),
-    getLiveEvents(env, new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)),
+    getSnapshot(env, scope),
+    getLiveEvents(env, new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), scope),
   ]);
 
   const live: GhLive | null = snapshot

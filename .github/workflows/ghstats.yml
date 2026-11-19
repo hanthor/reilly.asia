@@ -2,8 +2,10 @@ name: Publish ghstats snapshot
 
 on:
   schedule:
-    # Run every hour
+    # Run every hour; the tuna-os org snapshot (~20 min, a few hundred GraphQL
+    # points against the token's 1000/h) only on the 6-hourly run.
     - cron: '0 * * * *'
+    - cron: '30 */6 * * *'
   workflow_dispatch:
 
 jobs:
@@ -32,6 +34,19 @@ jobs:
           # Verify it's valid JSON
           jq -e '.v == 1 and (.prs | type == "array") and (.createdPrs | type == "array")' ghstats.json
 
+      - name: Collect tuna-os org stats
+        # ~12k PRs a year: slower than the personal snapshot, and a failure here
+        # must not stop the personal snapshot from publishing.
+        id: org
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 */6 * * *'
+        continue-on-error: true
+        timeout-minutes: 40
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx tsx scripts/ghstats.ts --scope org > ghstats-org.json
+          jq -e '.v == 1 and .scope == "org" and (.prs | type == "array") and (.authors | type == "array")' ghstats-org.json
+
       - name: Create or update release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,3 +57,6 @@ jobs:
               --title "GitHub Stats Snapshot" \
               --notes "Automatically refreshed GitHub statistics."
           gh release upload ghstats-data ghstats.json --clobber
+          if [ "${{ steps.org.outcome }}" = "success" ]; then
+            gh release upload ghstats-data ghstats-org.json --clobber
+          fi

@@ -20,6 +20,11 @@
     {
       "pattern": "www.reilly.asia",
       "custom_domain": true
+    },
+    {
+      // tuna-os org GitHub stats (the same SPA, org scope).
+      "pattern": "stats.tunaos.org",
+      "custom_domain": true
     }
   ]
 }

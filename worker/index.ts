@@ -11,9 +11,13 @@
 //   /infra/api/fleet    → per-machine device facts from the fleet-facts branch,
 //                         sanitized, cached 10 min
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
+// /api/ghstats[?scope=org] → GitHub stats snapshot + live events, cached 15 min
+// On stats.tunaos.org every page path serves the SPA, which renders the
+// tuna-os org stats; /api/ghstats and /assets/* work as on reilly.asia.
 
 import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
 import { buildGhStats, type GhStatsEnv } from "./ghstats-api";
+import { STATS_HOST, parseScope } from "../shared/ghstats";
 import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
@@ -109,6 +113,13 @@ export default {
     const url = new URL(request.url);
     const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
     if (canonical) return Response.redirect(canonical, 301);
+    if (url.hostname === STATS_HOST) {
+      if (url.pathname === "/api/ghstats") {
+        return cachedJson(request, ctx, async () => ({ body: await buildGhStats(env, "org"), ttl: GHSTATS_TTL }), "v3-org");
+      }
+      if (/\.[a-z0-9]+$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+      return landing(request, env);
+    }
     const route = classifyInfraPath(url.pathname, url.search);
     if (route.kind === "pass") return env.ASSETS.fetch(request);
     if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();
@@ -133,10 +144,13 @@ export default {
           return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
         });
       case "api-ghstats":
+      {
+        const scope = parseScope(url.searchParams.get("scope"));
         return cachedJson(request, ctx, async () => {
-          const body = await buildGhStats(env);
+          const body = await buildGhStats(env, scope);
           return { body, ttl: GHSTATS_TTL };
-        }, "v3");
+        }, scope === "org" ? "v3-org" : "v3");
+      }
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {
           status: 404,

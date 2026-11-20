@@ -13,23 +13,33 @@ const UA = "reilly.asia-infra-status";
 const PROBE_TIMEOUT_MS = 5000;
 const GITHUB_TIMEOUT_MS = 5000;
 
-async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+/**
+ * How this module reaches the network. Every upstream call goes through one of
+ * these, so a test can drive any builder with no network access. Production
+ * passes nothing and gets the global `fetch`.
+ */
+export type Fetcher = (url: string, init: RequestInit) => Promise<Response>;
+
+const globalFetcher: Fetcher = (url, init) => fetch(url, init);
+
+async function fetchWithTimeout(url: string, init: RequestInit, ms: number, fetcher: Fetcher = globalFetcher): Promise<Response> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
-    return await fetch(url, { ...init, signal: ctrl.signal });
+    return await fetcher(url, { ...init, signal: ctrl.signal });
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function probe(p: PublicEndpoint): Promise<EndpointStatus> {
+async function probe(p: PublicEndpoint, fetcher?: Fetcher): Promise<EndpointStatus> {
   const started = Date.now();
   try {
     const res = await fetchWithTimeout(
       `https://${p.label}${p.path}`,
       { headers: { "User-Agent": UA }, redirect: "manual", cache: "no-store" },
       PROBE_TIMEOUT_MS,
+      fetcher,
     );
     const latencyMs = Date.now() - started;
     await res.body?.cancel();
@@ -49,9 +59,9 @@ function githubHeaders(env: ApiEnv): Record<string, string> {
   return h;
 }
 
-async function githubJson<T>(path: string, env: ApiEnv): Promise<T | null> {
+async function githubJson<T>(path: string, env: ApiEnv, fetcher?: Fetcher): Promise<T | null> {
   try {
-    const res = await fetchWithTimeout(`https://api.github.com${path}`, { headers: githubHeaders(env) }, GITHUB_TIMEOUT_MS);
+    const res = await fetchWithTimeout(`https://api.github.com${path}`, { headers: githubHeaders(env) }, GITHUB_TIMEOUT_MS, fetcher);
     if (!res.ok) {
       await res.body?.cancel();
       return null;
@@ -62,8 +72,8 @@ async function githubJson<T>(path: string, env: ApiEnv): Promise<T | null> {
   }
 }
 
-async function latestHiveRelease(env: ApiEnv): Promise<StatusPayload["hive"]> {
-  const api = await githubJson<{ tag_name?: string; html_url?: string }>("/repos/hivecommons/hive/releases/latest", env);
+async function latestHiveRelease(env: ApiEnv, fetcher?: Fetcher): Promise<StatusPayload["hive"]> {
+  const api = await githubJson<{ tag_name?: string; html_url?: string }>("/repos/hivecommons/hive/releases/latest", env, fetcher);
   if (api?.tag_name) return { latestRelease: api.tag_name, releaseUrl: api.html_url ?? null };
 
   // Anonymous API quota is shared per egress IP; the releases/latest redirect is not rate-limited.
@@ -72,6 +82,7 @@ async function latestHiveRelease(env: ApiEnv): Promise<StatusPayload["hive"]> {
       "https://github.com/hivecommons/hive/releases/latest",
       { headers: { "User-Agent": UA }, redirect: "manual" },
       GITHUB_TIMEOUT_MS,
+      fetcher,
     );
     await res.body?.cancel();
     const location = res.headers.get("Location");
@@ -82,28 +93,31 @@ async function latestHiveRelease(env: ApiEnv): Promise<StatusPayload["hive"]> {
   }
 }
 
-export async function buildStatus(env: ApiEnv): Promise<StatusPayload> {
-  const [endpoints, hive] = await Promise.all([Promise.all(PUBLIC_ENDPOINTS.map(probe)), latestHiveRelease(env)]);
+export async function buildStatus(env: ApiEnv, fetcher?: Fetcher): Promise<StatusPayload> {
+  const [endpoints, hive] = await Promise.all([
+    Promise.all(PUBLIC_ENDPOINTS.map((p) => probe(p, fetcher))),
+    latestHiveRelease(env, fetcher),
+  ]);
   return { checkedAt: new Date().toISOString(), endpoints, hive };
 }
 
 const REPO = "hanthor/dotfiles";
 const WINDOW_DAYS = 30;
 
-async function searchCount(q: string, env: ApiEnv): Promise<number | null> {
-  const r = await githubJson<{ total_count?: number }>(`/search/issues?per_page=1&q=${encodeURIComponent(q)}`, env);
+async function searchCount(q: string, env: ApiEnv, fetcher?: Fetcher): Promise<number | null> {
+  const r = await githubJson<{ total_count?: number }>(`/search/issues?per_page=1&q=${encodeURIComponent(q)}`, env, fetcher);
   return typeof r?.total_count === "number" ? r.total_count : null;
 }
 
-export async function buildActivity(env: ApiEnv, now = new Date()): Promise<ActivityPayload> {
+export async function buildActivity(env: ApiEnv, now = new Date(), fetcher?: Fetcher): Promise<ActivityPayload> {
   const since = new Date(now.getTime() - WINDOW_DAYS * 86_400_000).toISOString().slice(0, 10);
   const base = `repo:${REPO} is:pr is:merged merged:>=${since}`;
   type Runs = { workflow_runs?: { conclusion: string | null; html_url: string; updated_at: string }[] };
   const [mergedTotal, mergedRenovate, mergedHive, runs] = await Promise.all([
-    searchCount(base, env),
-    searchCount(`${base} author:app/renovate`, env),
-    searchCount(`${base} author:app/hanthor-hive-agent`, env),
-    githubJson<Runs>(`/repos/${REPO}/actions/workflows/ci.yml/runs?branch=master&status=completed&per_page=1`, env),
+    searchCount(base, env, fetcher),
+    searchCount(`${base} author:app/renovate`, env, fetcher),
+    searchCount(`${base} author:app/hanthor-hive-agent`, env, fetcher),
+    githubJson<Runs>(`/repos/${REPO}/actions/workflows/ci.yml/runs?branch=master&status=completed&per_page=1`, env, fetcher),
   ]);
   const run = runs?.workflow_runs?.[0];
   return {
@@ -125,8 +139,6 @@ export function activityIsEmpty(a: ActivityPayload): boolean {
 
 const FACTS_TIMEOUT_MS = 5000;
 const FACTS_MAX_BYTES = 64 * 1024;
-
-type Fetcher = (url: string, init: RequestInit) => Promise<Response>;
 
 async function fetchFacts(host: string, fetcher: Fetcher): Promise<FleetFacts | null> {
   const ctrl = new AbortController();
@@ -152,7 +164,7 @@ async function fetchFacts(host: string, fetcher: Fetcher): Promise<FleetFacts | 
 
 /** Facts for every known host, fetched in parallel; a host that fails is null. */
 export async function buildFleet(
-  fetcher: Fetcher = (url, init) => fetch(url, init),
+  fetcher: Fetcher = globalFetcher,
   now = new Date(),
   hosts: readonly string[] = FACT_HOSTS,
 ): Promise<FleetPayload> {

@@ -51,11 +51,13 @@ type Box = { x: number; y: number; w: number; h: number; r: number };
 const HANDBOOK_LINKS = {
   bitwarden: handbook("bitwarden.html"),
   tailscale: handbook("network.html"),
-  cloudflare: handbook("servers/aws-k8s/cluster.html#ingress--the-important-gotcha"),
-  tunaos: handbook("servers/aws/"),
-  workloads: handbook("servers/aws-k8s/cluster.html#workloads"),
-  postgres: handbook("servers/aws-k8s/cluster.html#postgres-is-in-cluster-by-necessity"),
-  homeCluster: handbook("servers/talos-k8s/cluster.html"),
+  cloudflare: handbook("servers/spindle-vps/index.html"),
+  servers: handbook("fleet.html"),
+  hives: handbook("servers/hives.html"),
+  matrix: handbook("servers/spindle-vps/index.html"),
+  kubevirt: handbook("servers/karnataka.html"),
+  kubestellar: handbook("servers/home-k3s.html"),
+  retired: handbook("fleet.html#retired"),
 };
 
 const isExternal = (href: string) => /^https?:\/\//.test(href);
@@ -194,37 +196,37 @@ const HOSTS = [
   ["kerala", "postmarketOS"],
   ["mumbai", "phone VM"],
   ["termux", "android"],
-  ["goa", "Pi 5 · control node"],
-  ["punjab", "AWS agent box"],
+  ["goa", "Pi 5 · powered off"],
+  ["punjab", "agent VM"],
 ] as const;
 
 const WORKLOADS = [
-  ["Hive agent fleet", "school · reef · hub · personal", "public", "https://hub.tunaos.org", "the Hive hub"],
-  ["Matrix / ESS", "synapse · MAS · MatrixRTC", "public", HANDBOOK_LINKS.workloads, "cluster workloads in the handbook"],
-  ["CFP dashboard", "conference review tool", "tailnet", HANDBOOK_LINKS.workloads, "cluster workloads in the handbook"],
-  ["Postgres 16", "nightly dumps → S3", "internal", HANDBOOK_LINKS.postgres, "why Postgres runs in-cluster, in the handbook"],
+  ["Hive agent fleet", "school · reef · hub · hanthor on bihar", "public", HANDBOOK_LINKS.hives, "Hive hosting and failover, in the handbook"],
+  ["Matrix + calls", "homeserver · LiveKit on spindle", "public", HANDBOOK_LINKS.matrix, "the spindle VPS handbook"],
+  ["KubeVirt VMs", "punjab agent box · test VMs", "tailnet", HANDBOOK_LINKS.kubevirt, "karnataka, in the handbook"],
+  ["KubeStellar", "hub on bihar · karnataka cluster", "tailnet", HANDBOOK_LINKS.kubestellar, "home k3s and KubeStellar, in the handbook"],
 ] as const;
 
 const SERVICE_LINKS = {
   bitwarden: { href: HANDBOOK_LINKS.bitwarden, what: "secrets vault, handbook page" },
   github: { href: REPO_URL, what: "the hanthor/dotfiles repository" },
-  cloudflare: { href: HANDBOOK_LINKS.cloudflare, what: "DNS and public ingress, handbook section" },
+  cloudflare: { href: HANDBOOK_LINKS.cloudflare, what: "DNS and the spindle front door, handbook page" },
 };
 
-/** The dashed home-cluster box, linked to its handbook. */
+/** The dashed box for the retired Talos clusters, linked to the fleet page. */
 function HomeCluster({ x, y, w, h, sub, size }: { x: number; y: number; w: number; h: number; sub: string; size: number }) {
   return (
-    <NodeLink href={HANDBOOK_LINKS.homeCluster} label="bihar and karnataka, home Talos cluster, in storage: cluster handbook" box={{ x, y, w, h, r: 10 }}>
+    <NodeLink href={HANDBOOK_LINKS.retired} label="retired Talos clusters, AWS and home: fleet page" box={{ x, y, w, h, r: 10 }}>
       <rect className="ix-node-box" x={x} y={y} width={w} height={h} rx={10} fill="transparent" stroke={C.orange} strokeDasharray="5 5" />
       <text x={x + 14} y={y + h / 2 - 3} fill={C.ink} fontFamily={MONO} fontSize={size} fontWeight={600}>
-        <tspan className="ix-node-label">bihar + karnataka</tspan>
+        <tspan className="ix-node-label">Talos clusters</tspan>
       </text>
       <Sub x={x + 14} y={y + h / 2 + 14} size={10}>
         {sub}
       </Sub>
       <rect x={x + w - 92} y={y + h / 2 - 11} width={78} height={22} rx={11} fill="var(--ix-orange-soft)" />
       <Sub x={x + w - 53} y={y + h / 2 + 4} anchor="middle" fill={C.orange} size={10}>
-        in storage
+        retired
       </Sub>
     </NodeLink>
   );
@@ -242,7 +244,7 @@ function Tailscale({ x, y, w, h, children }: { x: number; y: number; w: number; 
 
 const TITLE = "Architecture of James Reilly's infrastructure";
 const DESC =
-  "The personal fleet of eight Ansible-managed machines and the TunaOS Talos Kubernetes cluster in AWS are joined by a Tailscale mesh. Bitwarden supplies secrets to the fleet at run time; every fleet machine pulls the GitHub repo daily; Hive agents in the cluster open pull requests back to GitHub; Cloudflare provides DNS and public ingress to the cluster.";
+  "The personal fleet of eight self-applying machines and the servers (two Bluefin home servers running k3s, and the spindle VPS) are joined by a Tailscale mesh. Bitwarden supplies secrets to the fleet at run time; every fleet machine pulls the GitHub repo daily; Hive agents on bihar open pull requests back to GitHub; Cloudflare provides DNS and proxies public traffic to Caddy on spindle, which forwards it over the tailnet. The AWS and home Talos clusters are retired.";
 
 function WideDiagram() {
   return (
@@ -262,13 +264,13 @@ function WideDiagram() {
       <Pill x={160} y={121} text="secrets at run time" />
       <Pill x={385} y={121} text="daily pull" />
       <Pill x={625} y={121} text="Hive PRs" />
-      <Pill x={840} y={121} text="public ingress" />
+      <Pill x={840} y={121} text="ingress → spindle" />
 
-      <Panel x={20} y={160} w={380} h={360} accent={C.orangeFill} title="Personal fleet" sub="Ansible · every host applies itself" href="#fleet" what="jump to the fleet section" />
+      <Panel x={20} y={160} w={380} h={360} accent={C.orangeFill} title="Personal fleet" sub="native units · every host applies itself" href="#fleet" what="jump to the fleet section" />
       {HOSTS.map(([name, sub], i) => (
         <Host key={name} x={40 + (i % 2) * 178} y={232 + Math.floor(i / 2) * 52} w={164} h={44} name={name} sub={sub} />
       ))}
-      <HomeCluster x={40} y={448} w={342} h={52} sub="home Talos cluster · AMD GPU" size={12.5} />
+      <HomeCluster x={40} y={448} w={342} h={52} sub="AWS + home · shut down Oct 2026" size={12.5} />
 
       <Tailscale x={440} y={160} w={120} h={360}>
         {[0, 1, 2, 4, 5, 6].map((i) => (
@@ -287,12 +289,12 @@ function WideDiagram() {
       <Flow id="arrow-wide" d="M404 346 H436" color={C.teal} both />
       <Flow id="arrow-wide" d="M564 346 H596" color={C.teal} both />
 
-      <Panel x={600} y={160} w={380} h={360} accent={C.tealFill} title="TunaOS · AWS eu-north-1" sub="Talos Linux + Kubernetes · OpenTofu" href={HANDBOOK_LINKS.tunaos} what="AWS account handbook" />
+      <Panel x={600} y={160} w={380} h={360} accent={C.tealFill} title="Servers · home + spindle" sub="Bluefin · k3s · KubeVirt · Caddy" href={HANDBOOK_LINKS.servers} what="fleet status in the handbook" />
       {WORKLOADS.map(([title, sub, tag, href, what], i) => (
         <Workload key={title} x={620} y={232 + i * 60} w={340} h={50} title={title} sub={sub} tag={tag} href={href} what={what} />
       ))}
       <Sub x={620} y={492} size={10.5}>
-        backups: verified dumps → S3 · daily EBS snapshots
+        Hives fail over to karnataka · data synced every 15 min
       </Sub>
     </svg>
   );
@@ -312,11 +314,11 @@ function TallDiagram() {
       <Pill x={91} y={87} text="run-time secrets" />
       <Pill x={269} y={87} text="daily pull" />
 
-      <Panel x={8} y={112} w={344} h={332} accent={C.orangeFill} title="Personal fleet" sub="Ansible · every host applies itself" href="#fleet" what="jump to the fleet section" />
+      <Panel x={8} y={112} w={344} h={332} accent={C.orangeFill} title="Personal fleet" sub="native units · every host applies itself" href="#fleet" what="jump to the fleet section" />
       {HOSTS.map(([name, sub], i) => (
         <Host key={name} x={22 + (i % 2) * 162} y={178 + Math.floor(i / 2) * 50} w={154} h={42} name={name} sub={sub} />
       ))}
-      <HomeCluster x={22} y={382} w={316} h={46} sub="home Talos cluster" size={12} />
+      <HomeCluster x={22} y={382} w={316} h={46} sub="AWS + home · retired 2026" size={12} />
 
       <Flow id="arrow-tall" d="M180 444 V466" color={C.teal} />
       <Tailscale x={8} y={470} w={344} h={54}>
@@ -329,28 +331,29 @@ function TallDiagram() {
       </Tailscale>
       <Flow id="arrow-tall" d="M180 524 V546" color={C.teal} />
 
-      <Panel x={8} y={550} w={344} h={336} accent={C.tealFill} title="TunaOS · AWS eu-north-1" sub="Talos + Kubernetes · OpenTofu" href={HANDBOOK_LINKS.tunaos} what="AWS account handbook" />
+      <Panel x={8} y={550} w={344} h={336} accent={C.tealFill} title="Servers · home + spindle" sub="Bluefin · k3s · KubeVirt · Caddy" href={HANDBOOK_LINKS.servers} what="fleet status in the handbook" />
       {WORKLOADS.map(([title, sub, tag, href, what], i) => (
         <Workload key={title} x={22} y={616 + i * 58} w={316} h={50} title={title} sub={sub} tag={tag} href={href} what={what} />
       ))}
       <Sub x={22} y={866} size={10}>
-        backups: verified dumps → S3 · EBS snapshots
+        Hives fail over to karnataka · synced every 15 min
       </Sub>
 
       <Flow id="arrow-tall" d="M180 916 V890" />
-      <Pill x={250} y={903} text="public ingress" />
+      <Pill x={250} y={903} text="ingress → spindle" />
       <Service x={97} y={916} w={166} h={56} title="Cloudflare" sub="DNS · proxy · edge" color={C.orangeFill} {...SERVICE_LINKS.cloudflare} />
     </svg>
   );
 }
 
 const TEXT_VERSION: [string, string][] = [
-  ["Personal fleet", "Eight Ansible-managed machines: laptops, a desktop, an ARM device, the phone (VM and Termux), a Raspberry Pi 5 control node and an AWS agent box. Each one applies the repo itself."],
-  ["Tailscale", "A WireGuard mesh joins the fleet and the cluster, with MagicDNS names and no hand-managed VPN."],
-  ["TunaOS cluster", "Two-node Talos Kubernetes cluster in AWS eu-north-1, all codified in OpenTofu. It runs the Hive agent fleet, Matrix/ESS, the CFP dashboard and Postgres."],
+  ["Personal fleet", "Eight machines: laptops, a desktop, an ARM device, the phone (VM and Termux), a Raspberry Pi 5 and the punjab agent VM. Each one applies the repo itself."],
+  ["Tailscale", "A WireGuard mesh joins the fleet and the servers, with MagicDNS names and no hand-managed VPN. Public traffic crosses it from spindle to home."],
+  ["Servers", "bihar runs the four Hives and the KubeStellar hub; karnataka runs KubeVirt VMs and is the Hives' cold standby; spindle, an Oracle VPS, runs Caddy, Matrix and LiveKit and holds the failover lease."],
   ["Bitwarden → fleet", "Secrets are fetched at run time, so nothing secret lives in the public repo."],
   ["GitHub ↔ everything", "Every machine pulls master daily. Hive agents and Renovate open PRs back into the same repo."],
-  ["Cloudflare → cluster", "DNS, proxying and public ingress, plus the Worker that serves this page."],
+  ["Cloudflare → spindle", "DNS and proxying in front of spindle's Caddy, plus the Worker that serves this page."],
+  ["Retired", "The TunaOS Talos cluster on AWS and the home Talos cluster were shut down in October and November 2026."],
 ];
 
 export function Architecture() {
@@ -362,7 +365,7 @@ export function Architecture() {
       title="Two estates, one repo"
       intro={
         <>
-          A personal fleet that configures itself, and the TunaOS cluster on AWS. Tailscale joins them, and{" "}
+          A personal fleet that configures itself, and the servers that run the Hives and Matrix. Tailscale joins them, and{" "}
           <a href="https://github.com/hanthor/dotfiles" className="font-medium underline decoration-[color:var(--ix-line)] underline-offset-4 [--ix-link:var(--ix-ink)] hover:decoration-[color:var(--ix-teal)]">
             hanthor/dotfiles
           </a>{" "}
@@ -405,8 +408,8 @@ export function Architecture() {
           fleet architecture
         </a>
         ,{" "}
-        <a href={handbook("servers/aws-k8s/cluster.html")} className="underline underline-offset-4 [--ix-link:var(--ix-teal)]">
-          AWS cluster handbook
+        <a href={handbook("servers/hives.html")} className="underline underline-offset-4 [--ix-link:var(--ix-teal)]">
+          Hive hosting and failover
         </a>
         ,{" "}
         <a href={handbook("cluster/hive.html")} className="underline underline-offset-4 [--ix-link:var(--ix-teal)]">

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatAgo } from "@shared/infra";
+import { formatAgo } from "@/lib/infra-format";
 import {
   FACT_HOSTS,
   applyState,

@@ -21,7 +21,7 @@ This project is deployed as a Cloudflare Worker with static asset binding. The W
 
 ### Prerequisites
 
-- Wrangler CLI installed: `npm install -g @cloudflare/wrangler`
+- Wrangler CLI: installed as a dev dependency by `npm install` (run it with `npx wrangler`)
 - Cloudflare account with the domain configured
 
 ### Local Testing
@@ -41,7 +41,7 @@ npm run build
 npm run deploy
 ```
 
-The deployment requires valid `wrangler.jsonc` configuration with your account ID and API token set via `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` environment variables.
+`npm run deploy` runs `wrangler deploy` against `wrangler.jsonc`; authenticate first with `npx wrangler login` (or set `CLOUDFLARE_API_TOKEN`).
 
 ## Project Structure
 
@@ -54,7 +54,6 @@ The deployment requires valid `wrangler.jsonc` configuration with your account I
 │   │   └── types/         # TypeScript type definitions
 │   └── public/            # Static assets
 ├── shared/                # Shared schemas and types
-├── server/                # Development server (not used in production)
 ├── dist/                  # Production build output
 └── attached_assets/       # Source assets
 ```

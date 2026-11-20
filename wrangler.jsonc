@@ -18,8 +18,11 @@
       "custom_domain": true
     },
     {
-      "pattern": "www.reilly.asia",
-      "custom_domain": true
+      // A zone route, not a custom domain: www already has a proxied CNAME
+      // (made for the www redirect rule), and a custom domain cannot attach
+      // to a hostname with its own DNS record (API error 100117).
+      "pattern": "www.reilly.asia/*",
+      "zone_name": "reilly.asia"
     },
     {
       // tuna-os org GitHub stats (the same SPA, org scope).

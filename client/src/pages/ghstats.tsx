@@ -1,6 +1,17 @@
 import { useEffect, useState, type KeyboardEvent, type PointerEvent } from "react";
-import type { GhSnapshot, GhLive, GhEvent, GhScope, PrRow } from "../../../shared/ghstats";
-import { GH_LOGIN, GH_ORG, STATS_HOST, isBotLogin, parseScope } from "../../../shared/ghstats";
+import type { GhSnapshot, GhLive, GhEvent, GhRange, GhScope, PrRow } from "../../../shared/ghstats";
+import {
+  GH_LOGIN,
+  GH_ORG,
+  RANGES,
+  STATS_HOST,
+  isBotLogin,
+  parseRange,
+  parseScope,
+  periodAverages,
+  rangeDays,
+  trailingUtcDays,
+} from "../../../shared/ghstats";
 
 interface ApiResponse {
   snapshot: GhSnapshot | null;
@@ -30,7 +41,7 @@ const CHART_HEIGHT = 100;
 const LOG_TICKS = [1_000, 10_000, 100_000, 1_000_000];
 
 const formatCount = (value: number) => value.toLocaleString();
-const formatAverage = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+const formatAverage = (value: number) => value.toLocaleString(undefined, { maximumFractionDigits: Math.abs(value) < 100 ? 1 : 0 });
 const formatCompact = (value: number) => new Intl.NumberFormat(undefined, { notation: "compact" }).format(value);
 
 interface TrendChartProps {
@@ -272,7 +283,7 @@ function ContributionHeatmap({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Contribution Calendar</h3>
+      <h3 className="text-lg font-semibold">Contribution Calendar (past year)</h3>
       <div className="overflow-x-auto pb-1">
         <div
           className="grid gap-1"
@@ -386,10 +397,10 @@ function currentScope(): { scope: GhScope; standalone: boolean } {
   return { scope: parseScope(new URLSearchParams(window.location.search).get("scope")), standalone: false };
 }
 
-function ScopeTabs({ scope }: { scope: GhScope }) {
+function ScopeTabs({ scope, range }: { scope: GhScope; range: GhRange }) {
   const tab = (value: GhScope, label: string) => (
     <a
-      href={value === "org" ? "/ghstats?scope=org" : "/ghstats"}
+      href={statsHref(value, range)}
       aria-current={scope === value ? "page" : undefined}
       className={
         "rounded-md px-3 py-1.5 text-sm font-medium transition-colors " +
@@ -404,6 +415,93 @@ function ScopeTabs({ scope }: { scope: GhScope }) {
       {tab("user", `@${GH_LOGIN}`)}
       {tab("org", `${GH_ORG} org`)}
     </nav>
+  );
+}
+
+function statsHref(scope: GhScope, range: GhRange): string {
+  const params = new URLSearchParams();
+  if (scope === "org") params.set("scope", "org");
+  if (range !== "year") params.set("range", range);
+  const query = params.toString();
+  return query ? `/ghstats?${query}` : "/ghstats";
+}
+
+function currentRange(): GhRange {
+  if (typeof window === "undefined") return "year";
+  return parseRange(new URLSearchParams(window.location.search).get("range"));
+}
+
+function RangeTabs({ range, onChange }: { range: GhRange; onChange: (range: GhRange) => void }) {
+  return (
+    <div role="group" aria-label="Time range" className="inline-flex gap-1 rounded-lg border border-border bg-card p-1">
+      {RANGES.map((entry) => (
+        <button
+          key={entry.value}
+          type="button"
+          aria-pressed={range === entry.value}
+          onClick={() => onChange(entry.value)}
+          className={
+            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors " +
+            (range === entry.value ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground")
+          }
+        >
+          {entry.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface AverageRow {
+  label: string;
+  /** Total over the `days` full UTC days before today. */
+  total: number;
+}
+
+/** Totals in the range as averages per day, week and month. */
+function Averages({ rows, days, rangeLabel }: { rows: AverageRow[]; days: number; rangeLabel: string }) {
+  const columns: { key: "day" | "week" | "month"; label: string }[] = [
+    { key: "day", label: "Per day" },
+    { key: "week", label: "Per week" },
+    { key: "month", label: "Per month" },
+  ];
+  return (
+    <div className="space-y-3">
+      <h3 className="text-lg font-semibold">Averages</h3>
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-muted-foreground">
+              <th scope="col" className="px-4 py-2 font-medium">{rangeLabel}</th>
+              {columns.map((column) => (
+                <th key={column.key} scope="col" className="px-4 py-2 text-right font-medium">
+                  {column.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const averages = periodAverages(row.total, days);
+              return (
+                <tr key={row.label} className="border-b border-border last:border-0">
+                  <th scope="row" className="px-4 py-2 text-left font-medium">{row.label}</th>
+                  {columns.map((column) => (
+                    <td key={column.key} className="px-4 py-2 text-right tabular-nums">
+                      {formatAverage(averages[column.key])}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Totals over the {days} full UTC days before today, divided by {days}. Today is still in progress, so it is left out. A week
+        is 7 days and a month is 30.44 days.
+      </p>
+    </div>
   );
 }
 
@@ -512,11 +610,13 @@ function LinesChanged({
   days,
   added: dailyAdded,
   deleted: dailyDeleted,
+  average,
 }: {
   prs: PrRow[];
   days: string[];
   added: number[];
   deleted: number[];
+  average: number[];
 }) {
   const dailyChanged = dailyAdded.map((value, index) => value + dailyDeleted[index]);
   const added = prs.reduce((sum, pr) => sum + pr[4], 0);
@@ -536,7 +636,7 @@ function LinesChanged({
         values={dailyChanged}
         labels={days}
         valueLabel="Lines changed"
-        average={rollingAverage(dailyChanged)}
+        average={average}
         scale="log"
         axisLabels={[days[0], "Today"]}
         caption="Additions plus deletions from PRs merged that day."
@@ -548,6 +648,15 @@ function LinesChanged({
 
 export default function GhStats() {
   const [{ scope, standalone }] = useState(currentScope);
+  const [range, setRange] = useState<GhRange>(currentRange);
+
+  const changeRange = (next: GhRange) => {
+    setRange(next);
+    const url = new URL(window.location.href);
+    if (next === "year") url.searchParams.delete("range");
+    else url.searchParams.set("range", next);
+    window.history.replaceState(null, "", url);
+  };
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -599,23 +708,57 @@ export default function GhStats() {
     );
   }
 
-  const createdPrs = snapshot.createdPrs;
-  const days = trailingUtcDays();
+  // Series cover the whole snapshot year so the 7-day average is right from the
+  // first day of a shorter range; each range shows the last `count` days.
+  const count = rangeDays(range);
+  const rangeEntry = RANGES.find((entry) => entry.value === range)!;
+  const rangeLabel = rangeEntry.label;
+  const short = `${count}d`;
+  // 366 days: today plus the 365 full days the year's averages use.
+  const yearDays = trailingUtcDays(366);
+  const lastDays = <T,>(series: T[]) => series.slice(series.length - count);
+  const days = lastDays(yearDays);
+  const cutoff = Date.parse(`${days[0]}T00:00:00Z`) / 1000;
   const axisLabels: [string, string] = [days[0], "Today"];
-  const merged = sumByDay(days, snapshot.prs, (pr) => pr[3]);
-  const created = createdPrs === undefined ? null : sumByDay(days, createdPrs, (createdAt) => createdAt);
-  const added = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[4]);
-  const deleted = sumByDay(days, snapshot.prs, (pr) => pr[3], (pr) => pr[5]);
+
+  const yearMerged = sumByDay(yearDays, snapshot.prs, (pr) => pr[3]);
+  const yearCreated = snapshot.createdPrs === undefined ? null : sumByDay(yearDays, snapshot.createdPrs, (createdAt) => createdAt);
+  const yearAdded = sumByDay(yearDays, snapshot.prs, (pr) => pr[3], (pr) => pr[4]);
+  const yearDeleted = sumByDay(yearDays, snapshot.prs, (pr) => pr[3], (pr) => pr[5]);
+  const merged = lastDays(yearMerged);
+  const created = yearCreated && lastDays(yearCreated);
+  const added = lastDays(yearAdded);
+  const deleted = lastDays(yearDeleted);
+  const mergedAverage = lastDays(rollingAverage(yearMerged));
+  const createdAverage = yearCreated && lastDays(rollingAverage(yearCreated));
+  const changedAverage = lastDays(rollingAverage(yearAdded.map((value, index) => value + yearDeleted[index])));
+
+  const inRange = snapshot.prs.map((pr) => pr[3] >= cutoff);
+  const prs = snapshot.prs.filter((_, index) => inRange[index]);
+  const createdPrs = snapshot.createdPrs?.filter((createdAt) => createdAt >= cutoff);
   const isOrg = scope === "org" && snapshot.scope === "org";
   const authors = snapshot.authors ?? [];
-  const prAuthors = snapshot.prAuthors ?? [];
+  const prAuthors = (snapshot.prAuthors ?? []).filter((_, index) => inRange[index]);
   const botMerged = prAuthors.filter((a) => isBotLogin(authors[a] ?? "")).length;
   const humanContributors = new Set(prAuthors.filter((a) => !isBotLogin(authors[a] ?? ""))).size;
+  const rangeAuthors = new Set(prAuthors).size;
+  const activeRepos = new Set(prs.map((pr) => pr[0])).size;
+  // Averages use the `count` full days before today: today is partial.
+  const fullDays = <T,>(series: T[]) => series.slice(series.length - count - 1, series.length - 1);
+  const total = (series: number[]) => fullDays(series).reduce((sum, value) => sum + value, 0);
+  const botPrs = snapshot.prs.filter((_, index) => isBotLogin(authors[snapshot.prAuthors?.[index] ?? -1] ?? ""));
+  const mergedPerDay = total(yearMerged) / count;
+  const averageRows: AverageRow[] = [
+    { label: "PRs merged", total: total(yearMerged) },
+    ...(yearCreated ? [{ label: "PRs created", total: total(yearCreated) }] : []),
+    ...(isOrg ? [{ label: "Merged from bots/agents", total: total(sumByDay(yearDays, botPrs, (pr) => pr[3])) }] : []),
+    { label: "Lines changed", total: total(yearAdded) + total(yearDeleted) },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <div className="mb-8">
-        {!standalone && <ScopeTabs scope={scope} />}
+        {!standalone && <ScopeTabs scope={scope} range={range} />}
         <h1 className="text-4xl font-bold mb-2">{isOrg ? `${GH_ORG} on GitHub` : "GitHub Stats"}</h1>
         {isOrg && (
           <p className="mb-2 text-muted-foreground">
@@ -623,7 +766,7 @@ export default function GhStats() {
             <a href={`https://github.com/${GH_ORG}`} className="underline underline-offset-4" target="_blank" rel="noopener noreferrer">
               {GH_ORG}
             </a>{" "}
-            organization over the last year, by humans and by the Hive agents.
+            organization over the last year, by humans and by the Hive agents. Pick a range to see the past week, month or year.
             {standalone && (
               <>
                 {" "}
@@ -639,31 +782,38 @@ export default function GhStats() {
           Last updated: {generatedAt}
           {error && <span className="text-destructive ml-2">({error})</span>}
         </p>
+        <div className="mt-4">
+          <RangeTabs range={range} onChange={changeRange} />
+        </div>
       </div>
 
       <div className="space-y-8">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           <KpiCard
-            label="PRs Created (365d)"
+            label={`PRs Created (${short})`}
             value={createdPrs?.length.toLocaleString() ?? "—"}
             subtext={createdPrs === undefined ? "Waiting for the next snapshot" : undefined}
           />
-          <KpiCard label="PRs Merged (365d)" value={snapshot.prs.length.toLocaleString()} />
+          <KpiCard
+            label={`PRs Merged (${short})`}
+            value={prs.length.toLocaleString()}
+            subtext={`${formatAverage(mergedPerDay)} per day`}
+          />
           {isOrg ? (
             <>
-              <KpiCard label="Human Contributors" value={humanContributors} subtext={`${authors.length} authors incl. bots`} />
+              <KpiCard label="Human Contributors" value={humanContributors} subtext={`${rangeAuthors} authors incl. bots`} />
               <KpiCard
                 label="Merged from Bots/Agents"
-                value={snapshot.prs.length ? `${Math.round((botMerged / snapshot.prs.length) * 100)}%` : "—"}
+                value={prs.length ? `${Math.round((botMerged / prs.length) * 100)}%` : "—"}
                 subtext={`${botMerged.toLocaleString()} PRs`}
               />
-              <KpiCard label="Active Repos" value={snapshot.repos.length} subtext={`of ${snapshot.profile.publicRepos} public`} />
+              <KpiCard label="Active Repos" value={activeRepos} subtext={`of ${snapshot.profile.publicRepos} public`} />
             </>
           ) : (
             <>
-              <KpiCard label="Contributions" value={snapshot.totals?.prs || 0} />
-              <KpiCard label="Code Review" value={snapshot.totals?.reviews || 0} />
+              <KpiCard label="Contributions" value={snapshot.totals?.prs || 0} subtext="Past year" />
+              <KpiCard label="Code Review" value={snapshot.totals?.reviews || 0} subtext="Past year" />
               <KpiCard label="Followers" value={snapshot.profile.followers} />
             </>
           )}
@@ -680,7 +830,7 @@ export default function GhStats() {
             values={merged}
             labels={days}
             valueLabel="Merged"
-            average={rollingAverage(merged)}
+            average={mergedAverage}
             axisLabels={axisLabels}
           />
           <CumulativeChart title="Cumulative PRs Merged (UTC)" daily={merged} days={days} valueLabel="Total merged" />
@@ -691,7 +841,7 @@ export default function GhStats() {
                 values={created}
                 labels={days}
                 valueLabel="Created"
-                average={rollingAverage(created)}
+                average={createdAverage ?? undefined}
                 axisLabels={axisLabels}
               />
               <CumulativeChart title="Cumulative PRs Created (UTC)" daily={created} days={days} valueLabel="Total created" />
@@ -699,22 +849,24 @@ export default function GhStats() {
           )}
         </div>
 
+        <Averages rows={averageRows} days={count} rangeLabel={rangeLabel} />
+
         {/* Contribution Calendar */}
         {snapshot.calendar && <ContributionHeatmap {...snapshot.calendar} />}
 
         {/* Top Repos */}
-        {snapshot.repos && <TopRepos repos={snapshot.repos} prs={snapshot.prs} />}
+        {snapshot.repos && <TopRepos repos={snapshot.repos} prs={prs} />}
 
         {isOrg && <TopAuthors authors={authors} prAuthors={prAuthors} />}
 
         {/* Time to Merge */}
-        <TimeToMerge prs={snapshot.prs} />
+        <TimeToMerge prs={prs} />
 
         {/* Punchcard */}
-        <Punchcard prs={snapshot.prs} />
+        <Punchcard prs={prs} />
 
         {/* Lines Changed */}
-        <LinesChanged prs={snapshot.prs} days={days} added={added} deleted={deleted} />
+        <LinesChanged prs={prs} days={days} added={added} deleted={deleted} average={changedAverage} />
 
         {/* Recent Activity Feed */}
         {(snapshot.recent?.length || 0) > 0 && (
@@ -805,13 +957,6 @@ function CumulativeChart({
       details={(index) => [`+${formatCount(daily[index])} that day`]}
     />
   );
-}
-
-/** UTC dates (YYYY-MM-DD) for the trailing 366 days, oldest first, ending today. */
-function trailingUtcDays(): string[] {
-  const now = new Date();
-  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Array.from({ length: 366 }, (_, index) => new Date(todayUtc - (365 - index) * 86_400_000).toISOString().slice(0, 10));
 }
 
 /** Sum `weight` (default 1) per UTC day of `timestamp` (epoch seconds), aligned with `days`. */

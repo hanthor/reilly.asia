@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createdPrQuery, isBotLogin, mergeFromSearchItem, mergedPrQuery, parseScope } from "./ghstats";
+import { createdPrQuery, isBotLogin, mergeFromSearchItem, mergedPrQuery, parseRange, parseScope, periodAverages, rangeDays, trailingUtcDays } from "./ghstats";
 
 describe("scope", () => {
   it("defaults to the user", () => {
@@ -37,5 +37,24 @@ describe("mergeFromSearchItem", () => {
       user: { login: "tuna-reef-hive[bot]" },
     });
     expect(m).toMatchObject({ repo: "tuna-os/docs", number: 7, author: "tuna-reef-hive[bot]" });
+  });
+});
+
+describe("range", () => {
+  it("defaults to the year", () => {
+    expect(parseRange(null)).toBe("year");
+    expect(parseRange("decade")).toBe("year");
+    expect(parseRange("week")).toBe("week");
+    expect(rangeDays("month")).toBe(30);
+  });
+
+  it("lists the trailing UTC days ending today", () => {
+    const days = trailingUtcDays(7, new Date("2026-03-02T23:30:00Z"));
+    expect(days).toEqual(["2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-02-28", "2026-03-01", "2026-03-02"]);
+  });
+
+  it("averages per day, week and month", () => {
+    expect(periodAverages(70, 7)).toEqual({ day: 10, week: 70, month: 304.375 });
+    expect(periodAverages(5, 0).day).toBe(0);
   });
 });

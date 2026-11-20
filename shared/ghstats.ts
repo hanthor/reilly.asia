@@ -26,6 +26,38 @@ export function parseScope(raw: string | null | undefined): GhScope {
   return raw === "org" ? "org" : "user";
 }
 
+/** Time window the stats page shows. The snapshots hold one year. */
+export type GhRange = "week" | "month" | "year";
+
+export const RANGES: { value: GhRange; label: string; days: number }[] = [
+  { value: "week", label: "Past week", days: 7 },
+  { value: "month", label: "Past month", days: 30 },
+  { value: "year", label: "Past year", days: 365 },
+];
+
+export function parseRange(raw: string | null | undefined): GhRange {
+  return RANGES.some((range) => range.value === raw) ? (raw as GhRange) : "year";
+}
+
+export function rangeDays(range: GhRange): number {
+  return RANGES.find((entry) => entry.value === range)!.days;
+}
+
+/** UTC dates (YYYY-MM-DD) for the trailing `count` days, oldest first, ending today. */
+export function trailingUtcDays(count: number, now = new Date()): string[] {
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Array.from({ length: count }, (_, index) => new Date(todayUtc - (count - 1 - index) * 86_400_000).toISOString().slice(0, 10));
+}
+
+/** Mean days per calendar month (365.25 / 12). */
+export const DAYS_PER_MONTH = 30.4375;
+
+/** Average of `total` per day, week and month over a window of `days` days. */
+export function periodAverages(total: number, days: number): { day: number; week: number; month: number } {
+  const day = days > 0 ? total / days : 0;
+  return { day, week: day * 7, month: day * DAYS_PER_MONTH };
+}
+
 /** Search qualifier selecting the scope's PRs. */
 export function scopeQualifier(scope: GhScope): string {
   return scope === "org" ? `org:${GH_ORG}` : `author:${GH_LOGIN}`;

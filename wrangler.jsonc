@@ -9,7 +9,7 @@
     "binding": "ASSETS",
     // Unknown paths get dist/public/404.html (the SPA shell, emitted by
     // vite.config.ts) with a real 404 status instead of an empty body.
-    "not_found_handling": "404-page",
+    "not_found_handling": "single-page-application",
     "run_worker_first": true
   },
   "routes": [
@@ -19,6 +19,11 @@
     },
     {
       "pattern": "www.reilly.asia",
+      "custom_domain": true
+    },
+    {
+      // tuna-os org GitHub stats (the same SPA, org scope).
+      "pattern": "stats.tunaos.org",
       "custom_domain": true
     }
   ]

@@ -13,7 +13,7 @@ import { useHostAnchors } from "@/components/infra/use-host-anchors";
 
 const TITLE = "Infrastructure · James Reilly";
 const DESCRIPTION =
-  "A self-maintaining personal fleet and the TunaOS Kubernetes cluster on AWS: architecture, live status and the automation that keeps it running.";
+  "A self-maintaining personal fleet, two home servers and one public VPS: architecture, live status and the automation that keeps it running.";
 
 function useDocumentMeta(title: string, description: string) {
   useEffect(() => {

@@ -9,7 +9,7 @@ export function InfraFooter() {
           <div className="max-w-xl">
             <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">Want the details?</h2>
             <p className="mt-3 text-[color:var(--ix-muted)]">
-              The handbook documents every Ansible role, the runbooks, the cluster rebuild steps and the incident
+              The handbook documents every unit, the runbooks, the failover drills and the incident
               write-ups. It is generated from the same repo.
             </p>
           </div>

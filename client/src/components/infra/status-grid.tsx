@@ -1,14 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import {
   PUBLIC_ENDPOINTS,
-  formatAgo,
-  formatLatency,
-  latencyTier,
   summarize,
   type EndpointGroup,
   type EndpointStatus,
   type OverallState,
 } from "@shared/infra";
+import { formatAgo, formatLatency, latencyTier } from "@/lib/infra-format";
 import { cn } from "@/lib/utils";
 import { Section } from "./section";
 import { StatusDot, toneFor } from "./status-dot";
@@ -16,7 +14,7 @@ import { useInfraStatus, useNow } from "./use-infra-api";
 
 const GROUPS: { id: EndpointGroup; title: string; blurb: string }[] = [
   { id: "hive", title: "Hive agent fleet", blurb: "Two TunaOS Hives, a personal Hive, and the hub that shows them all." },
-  { id: "matrix", title: "Matrix", blurb: "Element Server Suite: homeserver, auth service and calls." },
+  { id: "matrix", title: "Matrix", blurb: "The homeserver with its built-in sign-in, and MatrixRTC calls on LiveKit. All on spindle." },
 ];
 
 const OVERALL: Record<OverallState, { text: string; tone: "up" | "down" | "unknown" }> = {
@@ -119,7 +117,7 @@ export function StatusGrid() {
       index="01"
       eyebrow="Live status"
       title="What's running right now"
-      intro="The public endpoints, probed from Cloudflare's edge at most once a minute. The Kubernetes cluster behind them runs in AWS eu-north-1."
+      intro="The public endpoints, probed from Cloudflare's edge at most once a minute. Each one enters through Caddy on spindle; the Hives behind it run at home on bihar."
       aside={aside}
     >
       <div className="grid gap-8 lg:grid-cols-2">

@@ -1,0 +1,62 @@
+name: Publish ghstats snapshot
+
+on:
+  schedule:
+    # Run every hour; the tuna-os org snapshot (~20 min, a few hundred GraphQL
+    # points against the token's 1000/h) only on the 6-hourly run.
+    - cron: '0 * * * *'
+    - cron: '30 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Collect stats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use tsx to run TypeScript directly
+          npx tsx scripts/ghstats.ts > ghstats.json
+          # Verify it's valid JSON
+          jq -e '.v == 1 and (.prs | type == "array") and (.createdPrs | type == "array")' ghstats.json
+
+      - name: Collect tuna-os org stats
+        # ~12k PRs a year: slower than the personal snapshot, and a failure here
+        # must not stop the personal snapshot from publishing.
+        id: org
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 */6 * * *'
+        continue-on-error: true
+        timeout-minutes: 40
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx tsx scripts/ghstats.ts --scope org > ghstats-org.json
+          jq -e '.v == 1 and .scope == "org" and (.prs | type == "array") and (.authors | type == "array")' ghstats-org.json
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Keep the release stable; replace only the generated asset.
+          gh release view ghstats-data >/dev/null 2>&1 || \
+            gh release create ghstats-data \
+              --title "GitHub Stats Snapshot" \
+              --notes "Automatically refreshed GitHub statistics."
+          gh release upload ghstats-data ghstats.json --clobber
+          if [ "${{ steps.org.outcome }}" = "success" ]; then
+            gh release upload ghstats-data ghstats-org.json --clobber
+          fi

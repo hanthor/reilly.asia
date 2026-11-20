@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { formatAgo } from "@shared/infra";
+import { formatAgo } from "@/lib/infra-format";
 import {
   FACT_HOSTS,
   applyState,
@@ -117,7 +117,7 @@ function HostCard({ host, live, now }: { host: Host; live?: FactsState; now: num
           </h4>
           <span className="ix-mono inline-flex shrink-0 items-center gap-1.5 text-xs text-[color:var(--ix-muted)]">
             <StatusDot tone={offline ? "offline" : "up"} />
-            {offline ? "in storage" : live ? "managed" : "running"}
+            {offline ? "offline" : live ? "managed" : "running"}
           </span>
         </div>
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ix-teal)]">{host.kind}</p>
@@ -232,7 +232,7 @@ export function Fleet() {
       index="04"
       eyebrow="The fleet"
       title="Named after Indian states"
-      intro="Every host appears in one Ansible inventory, and group membership decides which roles it gets. Adding a machine takes a single command that registers it and bootstraps it over SSH."
+      intro="Every host appears in one inventory, and group membership decides which units it runs. Adding a machine takes a single command that registers it and bootstraps it over SSH."
     >
       <Summary facts={facts} loading={loading} failed={isError} />
       <div className="flex flex-col gap-10">

@@ -11,8 +11,13 @@
 //   /infra/api/fleet    → per-machine device facts from the fleet-facts branch,
 //                         sanitized, cached 10 min
 //   /infra/<other>      → 301 to /infra/handbook/<other> (pre-landing links)
+// /api/ghstats[?scope=org] → GitHub stats snapshot + live events, cached 15 min
+// On stats.tunaos.org every page path serves the SPA, which renders the
+// tuna-os org stats; /api/ghstats and /assets/* work as on reilly.asia.
 
 import { buildActivity, buildFleet, buildStatus, activityIsEmpty, fleetIsEmpty, type ApiEnv } from "./api";
+import { buildGhStats, type GhStatsEnv } from "./ghstats-api";
+import { STATS_HOST, parseScope } from "../shared/ghstats";
 import { canonicalRedirect, classifyInfraPath, rewriteHandbookLocation, visitorScheme } from "./routes";
 
 interface Env extends ApiEnv {
@@ -27,6 +32,8 @@ const STATUS_TTL = 60;
 const ACTIVITY_TTL = 3600;
 const ACTIVITY_EMPTY_TTL = 300;
 const FLEET_TTL = 600;
+const GHSTATS_TTL = 900; // 15 minutes
+const GHSTATS_EMPTY_TTL = 60; // snapshot missing or GitHub slow: retry soon
 const FLEET_EMPTY_TTL = 60;
 
 function methodNotAllowed(): Response {
@@ -66,8 +73,12 @@ async function cachedJson(
   request: Request,
   ctx: Ctx,
   build: () => Promise<{ body: unknown; ttl: number }>,
+  version = "",
 ): Promise<Response> {
-  const key = new Request(new URL(new URL(request.url).pathname, request.url).toString(), { method: "GET" });
+  const keyUrl = new URL(request.url);
+  keyUrl.search = "";
+  if (version) keyUrl.searchParams.set("_cache", version);
+  const key = new Request(keyUrl.toString(), { method: "GET" });
   const cache = caches.default;
   try {
     const hit = await cache.match(key);
@@ -103,6 +114,16 @@ export default {
     const url = new URL(request.url);
     const canonical = canonicalRedirect(url, visitorScheme(request.headers.get("cf-visitor")));
     if (canonical) return Response.redirect(canonical, 301);
+    if (url.hostname === STATS_HOST) {
+      if (url.pathname === "/api/ghstats") {
+        return cachedJson(request, ctx, async () => {
+          const body = await buildGhStats(env, "org");
+          return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
+        }, "v4-org");
+      }
+      if (/\.[a-z0-9]+$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+      return landing(request, env);
+    }
     const route = classifyInfraPath(url.pathname, url.search);
     if (route.kind === "pass") return env.ASSETS.fetch(request);
     if (request.method !== "GET" && request.method !== "HEAD") return methodNotAllowed();
@@ -126,6 +147,14 @@ export default {
           const body = await buildFleet();
           return { body, ttl: fleetIsEmpty(body) ? FLEET_EMPTY_TTL : FLEET_TTL };
         });
+      case "api-ghstats":
+      {
+        const scope = parseScope(url.searchParams.get("scope"));
+        return cachedJson(request, ctx, async () => {
+          const body = await buildGhStats(env, scope);
+          return { body, ttl: body.snapshot ? GHSTATS_TTL : GHSTATS_EMPTY_TTL };
+        }, scope === "org" ? "v4-org" : "v4");
+      }
       case "api-not-found":
         return new Response(JSON.stringify({ error: "not found" }), {
           status: 404,

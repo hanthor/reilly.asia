@@ -3,16 +3,31 @@ import { Switch, Route } from "wouter";
 import { ThemeProvider } from "@/components/theme-provider";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
+import { STATS_HOST } from "@shared/ghstats";
 
 const Infra = lazy(() => import("@/pages/infra"));
+const GhStats = lazy(() => import("@/pages/ghstats"));
 
 function Router() {
+  // stats.tunaos.org is the same Worker: every path is the org stats page.
+  if (typeof window !== "undefined" && window.location.hostname === STATS_HOST) {
+    return (
+      <Suspense fallback={null}>
+        <GhStats />
+      </Suspense>
+    );
+  }
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/infra">
         <Suspense fallback={null}>
           <Infra />
+        </Suspense>
+      </Route>
+      <Route path="/ghstats">
+        <Suspense fallback={null}>
+          <GhStats />
         </Suspense>
       </Route>
       <Route component={NotFound} />

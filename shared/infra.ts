@@ -29,8 +29,8 @@ export const PUBLIC_ENDPOINTS: readonly PublicEndpoint[] = [
   { name: "Reef Hive", label: "reef.tunaos.org", group: "hive", path: "/api/health" },
   { name: "Hive hub", label: "hub.tunaos.org", group: "hive", path: "/" },
   { name: "Personal Hive", label: "hive.reilly.asia", group: "hive", path: "/api/health" },
-  { name: "Synapse homeserver", label: "matrix.reilly.asia", group: "matrix", path: "/_matrix/client/versions" },
-  { name: "Matrix auth (MAS)", label: "auth.reilly.asia", group: "matrix", path: "/.well-known/openid-configuration" },
+  { name: "Matrix homeserver", label: "matrix.reilly.asia", group: "matrix", path: "/_matrix/client/versions" },
+  { name: "Matrix sign-in (OIDC)", label: "auth.reilly.asia", group: "matrix", path: "/.well-known/openid-configuration" },
   { name: "MatrixRTC calls", label: "call.reilly.asia", group: "matrix", path: "/" },
 ];
 

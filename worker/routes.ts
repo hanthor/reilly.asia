@@ -12,12 +12,14 @@ export type InfraRoute =
   | { kind: "api-status" }
   | { kind: "api-activity" }
   | { kind: "api-fleet" }
+  | { kind: "api-ghstats" }
   | { kind: "api-not-found" }
   | { kind: "pass" };
 
 export function classifyInfraPath(pathname: string, search = ""): InfraRoute {
   if (pathname === INFRA_PREFIX) return { kind: "redirect", location: `${INFRA_PREFIX}/${search}` };
   if (pathname === INFRA_PREFIX + "/") return { kind: "landing" };
+  if (pathname === "/api/ghstats") return { kind: "api-ghstats" };
   if (!pathname.startsWith(INFRA_PREFIX + "/")) return { kind: "pass" };
 
   if (pathname === "/infra/api/status") return { kind: "api-status" };

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { GITHUB_URL, LINKEDIN_URL, MATRIX_URL } from "@/lib/social-links";
 import { Mail, Github, MapPin, Globe, MessageSquare, LinkedinIcon } from "lucide-react";
 
 const inlineLink =
@@ -59,13 +60,13 @@ export default function HeroSection() {
                 </a>
               </Button>
               <Button asChild className={secondaryCta}>
-                <a href="https://github.com/hanthor" target="_blank" rel="noopener noreferrer">
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
                   <Github className="mr-2 h-4 w-4" aria-hidden="true" />
                   GitHub
                 </a>
               </Button>
               <Button asChild className={secondaryCta}>
-                <a href="https://www.linkedin.com/in/jreilly112/" target="_blank" rel="noopener noreferrer">
+                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer">
                   <LinkedinIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                   LinkedIn
                 </a>
@@ -83,7 +84,7 @@ export default function HeroSection() {
           <div className="flex items-center">
             <MessageSquare className="mr-2 h-4 w-4" aria-hidden="true" />
             <a
-              href="https://matrix.to/#/@james:reilly.asia"
+              href={MATRIX_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="underline-offset-2 hover:underline"

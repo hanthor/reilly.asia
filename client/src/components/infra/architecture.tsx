@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Section } from "./section";
-import { REPO_URL, handbook } from "./data";
+import { DIAGRAM_HOSTS, REPO_URL, handbook } from "./data";
 
 // Hand-built diagram: one wide layout (lg+) and one tall layout (below lg), so
 // text is never scaled below a readable size. Colours come from the --ix-*
@@ -189,17 +189,6 @@ function Defs({ id }: { id: string }) {
   );
 }
 
-const HOSTS = [
-  ["himachal", "laptop"],
-  ["kanpur", "laptop"],
-  ["dilli", "desktop"],
-  ["kerala", "postmarketOS"],
-  ["mumbai", "phone VM"],
-  ["termux", "android"],
-  ["goa", "Pi 5 · powered off"],
-  ["punjab", "agent VM"],
-] as const;
-
 const WORKLOADS = [
   ["Hive agent fleet", "school · reef · hub · hanthor on bihar", "public", HANDBOOK_LINKS.hives, "Hive hosting and failover, in the handbook"],
   ["Matrix + calls", "homeserver · LiveKit on spindle", "public", HANDBOOK_LINKS.matrix, "the spindle VPS handbook"],
@@ -267,7 +256,7 @@ function WideDiagram() {
       <Pill x={840} y={121} text="ingress → spindle" />
 
       <Panel x={20} y={160} w={380} h={360} accent={C.orangeFill} title="Personal fleet" sub="native units · every host applies itself" href="#fleet" what="jump to the fleet section" />
-      {HOSTS.map(([name, sub], i) => (
+      {DIAGRAM_HOSTS.map(([name, sub], i) => (
         <Host key={name} x={40 + (i % 2) * 178} y={232 + Math.floor(i / 2) * 52} w={164} h={44} name={name} sub={sub} />
       ))}
       <HomeCluster x={40} y={448} w={342} h={52} sub="AWS + home · shut down Oct 2026" size={12.5} />
@@ -315,7 +304,7 @@ function TallDiagram() {
       <Pill x={269} y={87} text="daily pull" />
 
       <Panel x={8} y={112} w={344} h={332} accent={C.orangeFill} title="Personal fleet" sub="native units · every host applies itself" href="#fleet" what="jump to the fleet section" />
-      {HOSTS.map(([name, sub], i) => (
+      {DIAGRAM_HOSTS.map(([name, sub], i) => (
         <Host key={name} x={22 + (i % 2) * 162} y={178 + Math.floor(i / 2) * 50} w={154} h={42} name={name} sub={sub} />
       ))}
       <HomeCluster x={22} y={382} w={316} h={46} sub="AWS + home · retired 2026" size={12} />

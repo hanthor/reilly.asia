@@ -2,6 +2,8 @@
 // host pages, docs/src/automation.md). Last synced 2026-11-19. Architecture only:
 // no addresses, ports, instance IDs or allowlists belong in this file.
 
+import type { FactHost } from "@shared/fleet";
+
 export const HANDBOOK = "/infra/handbook/";
 export const REPO_URL = "https://github.com/hanthor/dotfiles";
 
@@ -9,8 +11,8 @@ export const handbook = (page: string) => HANDBOOK + page;
 
 export type HostState = "active" | "offline" | "retired";
 
-export interface Host {
-  name: string;
+export interface Host<N extends string = string> {
+  name: N;
   kind: string;
   role: string;
   tags: string[];
@@ -20,18 +22,21 @@ export interface Host {
   slug?: string;
   /** Static hardware/OS facts for machines that do not publish their own. */
   specs?: [string, string][];
+  /** Place in the architecture diagram's host grid (ascending), with its caption. */
+  diagram?: { sub: string; order: number };
 }
 
 export const hostAnchor = (h: Pick<Host, "name" | "slug">) => `host-${h.slug ?? h.name}`;
 
-export interface HostGroup {
+export interface HostGroup<N extends string = string> {
   id: string;
   title: string;
   blurb: string;
-  hosts: Host[];
+  hosts: Host<N>[];
 }
 
-export const FLEET: HostGroup[] = [
+/** Names are typed against FACT_HOSTS, the roster the Worker serves facts for. */
+export const FLEET: HostGroup<FactHost>[] = [
   {
     id: "workstations",
     title: "Workstations",
@@ -43,6 +48,7 @@ export const FLEET: HostGroup[] = [
         role: "Everyday laptop workstation.",
         tags: ["x86_64", "Bluefin"],
         state: "active",
+        diagram: { sub: "laptop", order: 0 },
         href: handbook("desktop/himachal/index.html"),
       },
       {
@@ -51,6 +57,7 @@ export const FLEET: HostGroup[] = [
         role: "Portable workstation, also used as a Windows test machine.",
         tags: ["x86_64", "Bluefin"],
         state: "offline",
+        diagram: { sub: "laptop", order: 1 },
         href: handbook("desktop/kanpur/index.html"),
       },
       {
@@ -59,6 +66,7 @@ export const FLEET: HostGroup[] = [
         role: "Secondary workstation that also runs the BuildStream build monitor.",
         tags: ["x86_64", "Bluefin"],
         state: "active",
+        diagram: { sub: "desktop", order: 2 },
         href: handbook("desktop/dilli/index.html"),
       },
       {
@@ -67,6 +75,7 @@ export const FLEET: HostGroup[] = [
         role: "postmarketOS device. musl libc, so packages come from apk, not Homebrew.",
         tags: ["aarch64", "postmarketOS"],
         state: "active",
+        diagram: { sub: "postmarketOS", order: 3 },
         href: handbook("desktop/kerala/index.html"),
       },
       {
@@ -75,6 +84,7 @@ export const FLEET: HostGroup[] = [
         role: "Debian VM on the phone (Android Virtualization Framework), kept to a CLI-only profile.",
         tags: ["aarch64", "Debian", "cli-only"],
         state: "offline",
+        diagram: { sub: "phone VM", order: 4 },
       },
     ],
   },
@@ -89,6 +99,7 @@ export const FLEET: HostGroup[] = [
         role: "Headless agent box where the coding agents work. A KubeVirt VM on karnataka since the AWS instance was shut down.",
         tags: ["x86_64", "Ubuntu 24.04", "KubeVirt"],
         state: "active",
+        diagram: { sub: "agent VM", order: 7 },
         href: handbook("servers/punjab/index.html"),
       },
       {
@@ -97,6 +108,7 @@ export const FLEET: HostGroup[] = [
         role: "Former control node for fleet-wide health checks and the LAN inventory. Currently powered off.",
         tags: ["aarch64", "Debian 13"],
         state: "offline",
+        diagram: { sub: "Pi 5 · powered off", order: 6 },
         href: handbook("servers/goa/index.html"),
       },
       {
@@ -105,6 +117,7 @@ export const FLEET: HostGroup[] = [
         role: "The phone's Termux layer. No root and no systemd, so it has its own package unit.",
         tags: ["aarch64", "Termux"],
         state: "active",
+        diagram: { sub: "android", order: 5 },
       },
     ],
   },
@@ -173,6 +186,12 @@ export const CLUSTER_NODES: HostGroup[] = [
     ],
   },
 ];
+
+/** The architecture diagram's host grid, derived from FLEET so the two cannot drift. */
+export const DIAGRAM_HOSTS = FLEET.flatMap((g) => g.hosts)
+  .flatMap((h) => (h.diagram ? [{ name: h.name, sub: h.diagram.sub, order: h.diagram.order }] : []))
+  .sort((a, b) => a.order - b.order)
+  .map(({ name, sub }) => [name, sub] as const);
 
 export const RETIRED_NOTE =
   "Retired in 2026: the TunaOS Talos cluster and the punjab instance on AWS (shut down in October), the home Talos cluster (rebuilt as Bluefin + k3s on the same hardware), and the Hetzner VPSes matrix and telengana.";

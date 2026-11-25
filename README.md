@@ -43,6 +43,10 @@ npm run deploy
 
 `npm run deploy` runs `wrangler deploy` against `wrangler.jsonc`; authenticate first with `npx wrangler login` (or set `CLOUDFLARE_API_TOKEN`).
 
+## Infra API
+
+The `/infra` page reads three public JSON endpoints served by the Worker: `/infra/api/status`, `/infra/api/activity` and `/infra/api/fleet`. Their response shapes, cache lifetimes and failure behaviour are in [docs/infra-api.md](docs/infra-api.md).
+
 ## Project Structure
 
 ```
